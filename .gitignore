@@ -1,0 +1,43 @@
+# ─── Virtual environment ──────────────────────────────────────────────
+# Machine-specific: contains absolute C:\ paths, would break anywhere else.
+# requirements.txt travels instead — that IS the portable version.
+.venv/
+
+# ─── Python's own junk ────────────────────────────────────────────────
+# Compiled bytecode. Regenerated automatically every run. Zero value in git.
+__pycache__/
+*.py[cod]
+
+# ─── SECRETS — the ones that actually matter ──────────────────────────
+# .env holds SECRET_KEY, database passwords, API tokens.
+# A leaked SECRET_KEY lets anyone forge sessions on your site.
+# Once committed, it is in git history FOREVER, even if you delete it later.
+.env
+.env.*
+!.env.example
+
+# ─── Django runtime output ────────────────────────────────────────────
+db.sqlite3
+db.sqlite3-journal
+*.log
+/staticfiles/
+/media/
+
+# ─── Tool caches — all regenerable ────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ─── Editors & OS ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+
+# ─── NOT ignored, on purpose ──────────────────────────────────────────
+# CLAUDE.md and WORKFLOW.md are documentation, not secrets.
+# They are the source of truth and MUST be committed — a fresh session
+# reads them to know where we stopped.
