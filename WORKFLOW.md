@@ -1,7 +1,7 @@
-# WORKFLOW SCHEMA — **Bench**
+# WORKFLOW SCHEMA — **benchFlow**
 ### How we work, drawn out
 
-> Companion to `PROJECT_BIBLE.md`. Every diagram below is Mermaid — it renders automatically on
+> Companion to `CLAUDE.md`. Every diagram below is Mermaid — it renders automatically on
 > GitHub, so this file is readable straight from the repository page.
 
 ---
@@ -32,7 +32,7 @@ flowchart TD
     J -- "No" --> I
     J -- "Yes" --> K["✅ Tests written and passing"]
     K --> L["📋 Claude PROVIDES git commands<br/>❗ Mohammed RUNS them"]
-    L --> M["📝 PROJECT_BIBLE.md updated"]
+    L --> M["📝 CLAUDE.md updated"]
     M --> A
 
     style D fill:#2d5016,stroke:#7cb342,color:#fff
@@ -150,7 +150,7 @@ flowchart TD
         R["Rules & algorithms: matcher · calendar"]
     end
 
-    APP --> INF
+    INF -.->|"handed to application/<br/>at startup"| APP
 
     subgraph INF["infrastructure/ — the machinery"]
         ORM["Django ORM"]
@@ -168,9 +168,15 @@ flowchart TD
     style INF fill:#3e2723,stroke:#8d6e63,color:#fff
 ```
 
-> **The dependency rule:** every arrow points *inward*. `domain/` imports nothing from the layers
-> outside it — no Django, no database, no HTTP. That is precisely why it can be tested in
+> **The dependency rule:** every solid arrow points *inward*. `domain/` imports nothing from the
+> layers outside it — no Django, no database, no HTTP. That is precisely why it can be tested in
 > milliseconds, and it is the single biggest architectural idea in this project.
+>
+> **Read the two dotted arrows carefully — they are the whole trick.** `application/` never imports
+> `infrastructure/`. Instead `domain/` declares an *interface* ("something that can list all
+> specialists"), `infrastructure/` writes the real Django-ORM version of it, and at startup that
+> real object is **handed in** to `application/`. In tests we hand in a fake list instead and the
+> exact same code runs with no database.
 
 ---
 
@@ -386,7 +392,7 @@ Where each thing from the learning plan is actually taught:
 
 ```mermaid
 mindmap
-  root((Bench))
+  root((benchFlow))
     OOP
       Phase 1 entities
       encapsulation
@@ -439,7 +445,7 @@ mindmap
 
 ```mermaid
 flowchart LR
-    B["Bench<br/>this project"] --> PORT["Portfolio<br/>mohammedshakarneh.com"]
+    B["benchFlow<br/>this project"] --> PORT["Portfolio<br/>mohammedshakarneh.com"]
     L["lolo-cosmetics"] --> PORT
     A["attendance-tracking-system"] --> PORT
     N["My Notes"] --> PORT

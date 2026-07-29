@@ -1,4 +1,4 @@
-# PROJECT BIBLE — **Bench**
+# PROJECT BIBLE — **benchFlow**
 ### A resourcing & allocation platform for IT service companies
 > **Owner:** Mohammed M.Y. Shakarneh · **Started:** July 2026 · **Stack:** Python · Django
 > **Purpose:** become a genuinely strong backend engineer, and earn a job at **Expert Choice CIS**.
@@ -71,13 +71,13 @@ I did my corporate-training practice there and built the back end of a student a
 ### 1.2 Why *this* project and not something else
 
 Their homepage advertises a five-step staffing pipeline and a three-day placement promise. That is
-a company publishing exactly where its operational difficulty lives. **Bench is the engine behind
+a company publishing exactly where its operational difficulty lives. **benchFlow is the engine behind
 that promise.**
 
 - They understand its value instantly — it is their P&L.
 - I have first-hand insight: I lived their trainee programme (27 students sorted into 6 teams).
 - It is the grown-up successor to my internship project. Attendance *detected conflicts in a fixed
-  timetable*. Bench *generates the timetable* under competing constraints, with money attached.
+  timetable*. benchFlow *generates the timetable* under competing constraints, with money attached.
 - The core is real computer science, not CRUD — defensible in an interview and in an academic setting.
 
 ### 1.3 Known trade-off, accepted knowingly
@@ -106,10 +106,10 @@ HOW I RECOGNISE IT
     The tell-tale signs, so I can spot it in any codebase.
 
 WHY WE ARE USING IT HERE
-    The specific problem in Bench that this solves.
+    The specific problem in benchFlow that this solves.
     What would go wrong if we did NOT use it.
 
-WHERE IT LIVES IN BENCH
+WHERE IT LIVES IN BENCHFLOW
     The exact file/class/function it will appear in.
 
 THE SIMPLEST POSSIBLE EXAMPLE
@@ -171,7 +171,14 @@ Never slip a concept in silently. If we use a design pattern, name it and card i
 
 ---
 
-## 4. THE DOMAIN — what Bench actually models
+## 4. THE DOMAIN — what benchFlow actually models
+
+> **"Domain" here has nothing to do with website domain names.** In software, *the domain* is
+> **the real-world business area the program is about** — its subject, its vocabulary, its rules.
+> Our domain is *resourcing an IT outstaffing company*: specialists, skills, requests, placements,
+> margin. A word belongs to the domain if a manager at Expert Choice would use it in a meeting
+> without knowing any programming. So `domain/` is the folder holding the code that models
+> **the business**, not the code that talks to the database or the web.
 
 ### 4.1 The story in one paragraph
 An IT service company employs **specialists**. Clients send **requests** ("we need two senior Python
@@ -225,6 +232,12 @@ infrastructure/ ← Django ORM models, Redis, Celery, email. The outside world.
 **The dependency rule:** arrows point *inward*. `domain/` depends on nothing. That's what makes it
 testable in milliseconds without a database — and it's the single biggest idea in this project.
 
+**How `application/` uses the database without depending on it.** `domain/` declares an *interface*
+— "something, I don't care what, that can give me all specialists". `infrastructure/` writes the
+real Django-ORM version of that. At startup we hand the real one to `application/`. So the arrow
+runs `infrastructure → domain`, never `application → infrastructure`. In tests we hand it a fake
+list instead, and the same code runs with no database at all.
+
 ### 5.2 Why we build the domain in plain Python first
 We will write `Specialist`, `Skill` and the matcher as **ordinary Python classes with no Django
 anywhere**, and only later connect them to the database. Two reasons:
@@ -241,15 +254,22 @@ anywhere**, and only later connect them to the database. Two reasons:
 ### PHASE 0 — Foundations & setup
 **⭐ Concepts:** virtual environments · dependency management · project structure · `.gitignore` · Git branching model · README
 - Create the repo, virtualenv, install Django, first `runserver`
+- Install **pytest** here as a *tool* (one command, one example test) so Phase 1 can be tested at all.
+  Phase 3 then teaches testing as a *discipline* — that is a different thing.
+- Create the four layer folders (`domain/ application/ infrastructure/ interfaces/`) empty, now
 - Agree conventions (naming, commit messages, branch names)
 - **Deliverable:** an empty Django project that runs, on GitHub, with a README
 
 ### PHASE 1 — Object-Oriented Programming ⭐⭐ (the big one)
 **⭐ Concepts:** classes & objects · **encapsulation · inheritance · polymorphism · abstraction** ·
 `@property` · `@classmethod` / `@staticmethod` · abstract base classes · **composition vs inheritance** ·
-dunder methods (`__str__`, `__eq__`, `__lt__`) · when OOP is the *wrong* tool
+dunder methods (`__str__`, `__eq__`, `__lt__`) · when OOP is the *wrong* tool ·
+**`Decimal` for money** (mini-card, see below) · **dates & inclusive-vs-exclusive ranges**
 - Build `Specialist`, `Skill`, `SkillLevel`, `Request` as **pure Python classes, zero Django**
-- **Deliverable:** `domain/` package, fully unit-tested, no framework
+- ⚠️ The first money field (`cost_rate`) appears *here*, not in Phase 12. So `Decimal` gets a short
+  card the moment we type it — never `float` for money, not even temporarily. Phase 12 keeps the
+  *engine* (margin, rounding, DB constraints, race conditions), which genuinely needs a database.
+- **Deliverable:** `domain/` package, unit-tested with the pytest installed in Phase 0, no framework
 
 ### PHASE 2 — Clean code & SOLID
 **⭐ Concepts:** SOLID (all five, one at a time) · DRY · KISS · separation of concerns · naming ·
@@ -257,8 +277,8 @@ small functions · code smells
 - Refactor Phase 1 with each principle, seeing what improves and why
 - **Deliverable:** the same behaviour, visibly better code
 
-### PHASE 3 — Testing
-**⭐ Concepts:** unit vs integration vs e2e · pytest · fixtures · factories · **TDD** · what coverage
+### PHASE 3 — Testing *(the discipline, not the tool — the tool arrived in Phase 0)*
+**⭐ Concepts:** unit vs integration vs e2e · fixtures · factories · **TDD** · what coverage
 really means · mocking (and why to avoid it)
 - Write tests *first* for the next domain rule
 - **Deliverable:** green suite, honest coverage report
@@ -297,8 +317,11 @@ fractional capacity
 ### PHASE 9 — Software architecture
 **⭐ Concepts:** layered architecture · **hexagonal / ports & adapters** · dependency inversion ·
 the dependency rule · **ADRs** (architecture decision records)
-- Restructure into `domain / application / infrastructure / interfaces`
-- **Deliverable:** enforced layering + first ADRs
+- The four folders already exist from Phase 0 — this phase does **not** restructure them. It
+  *formalises* the rule: define the interfaces (ports) explicitly, wire them up at startup, and add
+  `import-linter` to CI so a forbidden import turns the build red. We deliberately break one import
+  and watch it fail.
+- **Deliverable:** machine-enforced layering + first ADRs
 
 ### PHASE 10 — Web & APIs
 **⭐ Concepts:** HTTP verbs & status codes · **REST** · the request lifecycle · serialization ·
@@ -401,21 +424,49 @@ A phase is done when **all** of these are true:
 
 > Updated at the end of every session. Newest entry at the top.
 
+### ▶ CONTINUE FROM HERE — read this first in a new conversation
+
+**Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
+
+**Where we are:** Phase 0, not started. No virtualenv, no Django, no code. The repo has three
+files: `CLAUDE.md`, `WORKFLOW.md`, `.git`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+
+**Mohammed's level — important.** True beginner. Cannot yet write code unaided and does not
+memorise methods or syntax. Knows roughly what `.venv` and `.gitignore` are for, knows some Git,
+knows nothing about Django. **Explain everything. Assume nothing. Keep replies short — long
+replies overwhelm and demotivate.** He types the core logic himself; Claude scaffolds only.
+
+**Shell:** Mohammed uses **Git Bash**, not PowerShell. Give every command in bash syntax
+(e.g. venv activation is `source .venv/Scripts/activate`, not `Activate.ps1`).
+
+**Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
+was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
+
+**The immediate next step:** Phase 0, step 0.1 — install Python 3.13, then Concept Card for virtual
+environments, then create `.venv` and `.gitignore`.
+
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 29 Jul 2026 | 0 | Read both planning docs. Renamed project Bench → benchFlow. Fixed 7 contradictions between the two files (see Decisions 6–8). Defined "domain" in §4 and §10. Corrected the dependency-rule diagram in `WORKFLOW.md` §4 | what *domain* means in software · `.gitignore` is for secrets and regenerable junk — **not** documentation | *(pending — docs commit)* |
 | — | 0 | *Not started* | — | — |
 
 ### Decisions made
 | # | Decision | Reasoning | Date |
 |---|---|---|---|
-| 1 | Project is **Bench**, a resourcing platform | Mirrors Expert Choice's actual business model | Jul 2026 |
+| 1 | Project is **benchFlow**, a resourcing platform | Mirrors Expert Choice's actual business model | Jul 2026 |
 | 2 | **Django** (not FastAPI) | On their published stack; batteries-included teaches more architecture | Jul 2026 |
 | 3 | **PostgreSQL** (not SQLite) | Real constraints/transactions; step up from the internship | Jul 2026 |
 | 4 | Domain layer in **pure Python**, no Django | Teaches real OOP; keeps rules testable and portable | Jul 2026 |
 | 5 | Backend fully before frontend | My explicit instruction | Jul 2026 |
+| 6 | Repo is **`Shakarneh/benchFlow`**; the Bible is **`CLAUDE.md`** (was `PROJECT_BIBLE.md`) | Project named after planning docs were written | 29 Jul 2026 |
+| 7 | The four layer folders exist from **Phase 0**; Phase 9 *enforces* rather than restructures | Phase 1 and Phase 9 contradicted each other. No time for a big refactor | 29 Jul 2026 |
+| 8 | pytest installed in Phase 0; `Decimal` introduced in Phase 1 | Phase 1 demanded tests before Phase 3 gave us pytest; money fields appear in Phase 1, not Phase 12 | 29 Jul 2026 |
+| 9 | **Python 3.13 + Django 5.2 LTS** | Whole stack (DRF, Celery, psycopg, mypy) is proven on it. Python 3.14 was already installed but the ecosystem lags new releases | 29 Jul 2026 |
+| 10 | **No phases cut** — all 22 inside 15 days | Mohammed's explicit decision after Claude advised cutting. Pace increases instead: shorter cards, no detours | 29 Jul 2026 |
+
+> ⚠️ Decision 7 is Claude's call, made to resolve a contradiction. Reversible — say so and we flip it.
 
 ### Open questions
-- Final repository name (`bench` / `bench-platform` / other)
 - Public or private repo during development
 
 ---
@@ -426,7 +477,10 @@ Every term gets defined the first time it appears. Add to this as we go.
 
 | Term | Meaning |
 |---|---|
-| **The bench** | Employed engineers not currently assigned to a client — idle capacity that costs money |
+| **Domain** *(software)* | The real-world business area a program is about — its subject and its rules. **Not** a website domain name. Ours is IT resourcing. `domain/` holds the code that models the business |
+| **Entity** | One "thing" in the domain, modelled as a class — `Specialist`, `Request` |
+| **Interface / port** | A promise about *what* something can do, with no *how*. `domain/` declares them; `infrastructure/` fulfils them |
+| **The bench** | Employed engineers not currently assigned to a client — idle capacity that costs money. *(This is the industry term — it stays, even though the project is now benchFlow)* |
 | **Outstaffing** | Renting your engineers to work inside a client's team |
 | **ВЦР** | Выделенный центр разработки — a dedicated development centre for one client |
 | **Utilisation** | The share of a specialist's time that is billable |
