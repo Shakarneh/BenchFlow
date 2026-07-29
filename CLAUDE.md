@@ -428,8 +428,21 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phase 0, not started. No virtualenv, no Django, no code. The repo has three
-files: `CLAUDE.md`, `WORKFLOW.md`, `.git`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+**Where we are:** Phase 0, ~80% done. Python 3.13.14 + Django 5.2.16 installed in `.venv`,
+`runserver` shows the rocket, the four layer folders exist as empty packages.
+Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+
+```
+bench/
+├── .venv/              (ignored)   ├── config/          settings.py · urls.py · wsgi.py
+├── .gitignore                      ├── domain/          empty — Phase 1 fills this
+├── CLAUDE.md · WORKFLOW.md         ├── application/     empty
+├── requirements.txt                ├── infrastructure/  empty
+├── manage.py                       └── interfaces/      empty
+```
+
+**Still open in Phase 0:** `README.md` · one example pytest test · `develop` branch.
+**Known debt:** `SECRET_KEY` is hard-coded in `config/settings.py`. Move it to `.env` in Phase 15.
 
 **Mohammed's level — important.** True beginner. Cannot yet write code unaided and does not
 memorise methods or syntax. Knows roughly what `.venv` and `.gitignore` are for, knows some Git,
@@ -442,13 +455,13 @@ replies overwhelm and demotivate.** He types the core logic himself; Claude scaf
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** Phase 0, step 0.1 — install Python 3.13, then Concept Card for virtual
-environments, then create `.venv` and `.gitignore`.
+**The immediate next step:** finish Phase 0 — `README.md`, one example pytest test — then
+**Phase 1 (OOP)**, which is the big one. Post the Git branching card at the start of Phase 1.
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
-| 29 Jul 2026 | 0 | Read both planning docs. Renamed project Bench → benchFlow. Fixed 7 contradictions between the two files (see Decisions 6–8). Defined "domain" in §4 and §10. Corrected the dependency-rule diagram in `WORKFLOW.md` §4 | what *domain* means in software · `.gitignore` is for secrets and regenerable junk — **not** documentation | *(pending — docs commit)* |
-| — | 0 | *Not started* | — | — |
+| 29 Jul 2026 | 0 | Installed Python 3.13.14 alongside 3.14. Created `.venv` + `.gitignore`. Installed Django 5.2.16 + pytest, pinned in `requirements.txt`. `startproject config .` (dot layout, `config/` naming). Created the four layer folders as empty packages. `runserver` works | **virtual environments** (and that `.venv` never travels — `requirements.txt` does) · dependency pinning · semantic versioning · **Django** & batteries-included · `__init__.py` makes a folder a package · why `config/` beats a nested same-name folder | 4 commits |
+| 29 Jul 2026 | 0 | Read both planning docs. Renamed project Bench → benchFlow. Fixed 7 contradictions between the two files (see Decisions 6–8). Defined "domain" in §4 and §10. Corrected the dependency-rule diagram in `WORKFLOW.md` §4 | what *domain* means in software · `.gitignore` is for secrets and regenerable junk — **not** documentation | 2 commits |
 
 ### Decisions made
 | # | Decision | Reasoning | Date |
