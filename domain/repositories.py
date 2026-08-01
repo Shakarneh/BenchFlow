@@ -17,3 +17,11 @@ class SpecialistRepository(ABC):
     @abstractmethod
     def all(self) -> list:
         """Return every specialist, as domain Specialist objects."""
+
+
+class SkillGraphRepository(ABC):
+    """Something that can give us the skill implication graph."""
+
+    @abstractmethod
+    def load(self):
+        """Return a SkillGraph built from wherever implications are stored."""

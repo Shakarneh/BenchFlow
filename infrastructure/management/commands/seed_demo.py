@@ -20,7 +20,21 @@ from infrastructure.models import (
     SpecialistSkillModel,
 )
 
-SKILLS = ["Python", "Django", "FastAPI", "PostgreSQL", "Docker", "Go", "React"]
+SKILLS = [
+    "Programming", "Python", "Django", "FastAPI", "PostgreSQL",
+    "Docker", "Linux", "Go", "React", "JavaScript",
+]
+
+# skill -> skills it necessarily includes. This is the DAG.
+IMPLIES = {
+    "Django": ["Python"],
+    "FastAPI": ["Python"],
+    "Python": ["Programming"],
+    "Go": ["Programming"],
+    "React": ["JavaScript"],
+    "JavaScript": ["Programming"],
+    "Docker": ["Linux"],
+}
 
 # (name, cost_rate, available_from, [(skill, level), ...])
 SPECIALISTS = [
@@ -53,6 +67,9 @@ class Command(BaseCommand):
         SkillModel.objects.all().delete()
 
         skills = {name: SkillModel.objects.create(name=name) for name in SKILLS}
+
+        for skill_name, implied_names in IMPLIES.items():
+            skills[skill_name].implies.set([skills[n] for n in implied_names])
 
         for full_name, rate, available_from, skill_levels in SPECIALISTS:
             specialist = SpecialistModel.objects.create(

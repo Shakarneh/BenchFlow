@@ -16,9 +16,21 @@ LEVEL_CHOICES = [(level.value, level.name.title()) for level in Level]
 
 
 class SkillModel(models.Model):
-    """A capability, e.g. "Django". Unique by name."""
+    """A capability, e.g. "Django". Unique by name.
+
+    `implies` is a self-referencing many-to-many: a skill points at other
+    skills it necessarily includes. Django -> Python. symmetrical=False is
+    essential -- the relation only runs one way.
+    """
 
     name = models.CharField(max_length=100, unique=True)
+    implies = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        blank=True,
+        related_name="implied_by",
+        help_text="Skills this one necessarily includes. Django implies Python.",
+    )
 
     class Meta:
         db_table = "skill"
