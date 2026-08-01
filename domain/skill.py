@@ -1,15 +1,12 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
 class Skill:
-    def __init__(self , name):
-        self.name = name
-        
-    def __repr__(self):
-        return f"Skill({self.name!r})"
-    
-    def __eq__(self, other):
-        if not isinstance (other,Skill):
-            return NotImplemented
-        return self.name == other.name
-    
-    def __hash__(self):
-        return hash(self.name)
-     
+    """A capability, e.g. "Django".
+
+    A value object: two skills with the same name ARE the same skill, and a
+    skill has no life cycle of its own. Hence frozen.
+    """
+
+    name: str
