@@ -437,8 +437,8 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0, 1 and 2 **done and merged to `main`**. **28 tests passing**, zero
-Django imports in `domain/`. Phase 2 refactor lives on `refactor/phase-2-dataclasses`.
+**Where we are:** Phases 0–3 **done**. **30 tests passing, 100% coverage of `domain/`**, zero Django
+imports in `domain/`. Phase 3 work is on `test/phase-3-fixtures` (PR it to `develop`, then `main`).
 Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
 
 ```
@@ -460,7 +460,8 @@ This same distinction decides which tables get an ID in Phase 4.
 |---|---|---|
 | `SkillLevel.covers(required)` | does this one skill cover it? | `==` skill **and** `>=` level |
 | `Specialist.covers(required)` | do **any** of my skills cover it? | `any()` |
-| `Request.is_satisfied_by(spec)` | does this person meet **all** requirements, in time? | `all()` **and** date check |
+| `Request.is_satisfied_by(spec)` | all skills, free in time, **and** within budget? | `all()` + date + rate |
+| `GreedyMatcher.match(req, people)` | who do we propose? | filter → sort by cost → take headcount |
 
 **Known debt:** `SECRET_KEY` is hard-coded in `config/settings.py` — move to `.env` in Phase 15.
 PEP 8 nits (trailing spaces, spacing) in domain files — ruff/black clean them up in Phase 16.
@@ -481,13 +482,15 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 3 — Testing as a discipline.** Extract the duplicated
-`make_specialist` / `make_request` helpers into `tests/conftest.py` as pytest fixtures, then write
-the next domain rule **test-first** (TDD). Then Phase 4 (databases).
+**The immediate next step:** **Phase 4 — Databases & persistence.** Django ORM models in
+`infrastructure/` that mirror the domain, migrations, Django admin as a free UI, seeded demo data.
+⚠️ The dependency rule is about to be tested for real: `domain/` must STILL have zero Django
+imports when Phase 4 ends — the ORM models are a *separate* layer that maps to the entities.
 **Checkpoint:** Phase 7 matcher done by ~6 Aug, or the scope conversation returns (deadline 13 Aug).
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 1 Aug 2026 | 3 | **Phase 3 done.** Extracted `make_specialist`/`make_request` into `tests/conftest.py` as **factory fixtures** (frozen value objects stayed plain constants). Then a full **TDD cycle** on a real gap: `max_bill_rate` was being ignored — wrote the failing test first (incl. an exactly-on-budget boundary test), watched it go red for the right reason, then added the rule. Added `pytest-cov`: **100% of `domain/`** | **fixtures & `conftest.py`** (auto-discovery, injection by parameter name) · **factory fixture** pattern · why immutable test data needs no fixture · **TDD red→green→refactor** · **boundary testing** (`<=` vs `<`) · **what coverage really means** — seen live: `request.py` showed 100% coverage *while a test was failing*, because coverage can't measure code that was never written | 3 commits |
 | 1 Aug 2026 | 1→2 | Phase 1 closed: `Matcher` ABC + `GreedyMatcher` (filter → sort → take), PR merged to `develop` then `main`. **Phase 2 done**: SOLID mapped onto the existing code (4 of 5 already satisfied — the ABC did it), then the one real violation, DRY, fixed by converting all four entities to `@dataclass` — ~40 lines of hand-written dunders deleted, 28 tests still green | **abstract base classes** · **inheritance & polymorphism** · list comprehensions · `lambda` · slicing · **SOLID** (all five, against his own code) · **DRY** · `@dataclass` & type hints · **value object vs entity** (what `frozen=True` really means) · refactoring = behaviour identical, code better | 2 commits · 2 PRs |
 | 30 Jul 2026 | 1 | **Mode v2 adopted** after the AI-era strategy talk (three speeches analysed; verdict: plan content right, delivery too slow). Built `Level` · `SkillLevel.covers()` · `Specialist.covers()` · `Request.is_satisfied_by()` — Mohammed typed all three matching rules, Claude wrote the rest and the 23 tests. First real debugging session: three hand-typed bugs cornered by tests | enums & IntEnum · why enums start at 1 (falsy zero) · **composition vs inheritance** (has-a vs is-a) · **`Decimal` vs float for money** (and why to build it from a string) · `any()` vs `all()` · short-circuit evaluation · tests as the trust mechanism for code you didn't write | 3 commits |
 | 29 Jul 2026 | 0→1 | Phase 0 closed: README · smoke test · `develop` branch · Git Flow kept. Phase 1 opened on `feat/phase-1-domain-entities`: `Skill` with `__repr__`/`__eq__`/`__hash__` + 4 tests, pushed. Smoke test later removed as superseded | classes & objects · `__init__`/`self` · dunder methods · value vs identity equality · the eq⇒hash invariant · `NotImplemented` vs `NotImplementedError` · REPL workflow · branching model · `git rm` | 6 commits |
