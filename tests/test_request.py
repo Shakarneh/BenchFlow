@@ -35,3 +35,15 @@ def test_satisfied_when_the_specialist_frees_up_exactly_on_the_start_date(make_r
 
 def test_a_request_with_no_required_skills_is_satisfied_by_anyone(make_request, make_specialist):
     assert make_request().is_satisfied_by(make_specialist())
+
+
+def test_not_satisfied_when_the_specialist_costs_more_than_the_budget(make_request, make_specialist):
+    request = make_request(required_skills=[DJANGO_MIDDLE], max_bill_rate="50.00")
+    ivan = make_specialist(skills=[DJANGO_SENIOR], cost_rate="80.00")
+    assert not request.is_satisfied_by(ivan)
+
+
+def test_satisfied_when_the_cost_rate_exactly_equals_the_budget(make_request, make_specialist):
+    request = make_request(required_skills=[DJANGO_MIDDLE], max_bill_rate="50.00")
+    ivan = make_specialist(skills=[DJANGO_SENIOR], cost_rate="50.00")
+    assert request.is_satisfied_by(ivan)
