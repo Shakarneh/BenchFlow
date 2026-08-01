@@ -29,8 +29,13 @@ class RequestRequirementInline(admin.TabularInline):
 
 @admin.register(SkillModel)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ["name"]
+    list_display = ["name", "implied_skills"]
     search_fields = ["name"]
+    filter_horizontal = ["implies"]
+
+    @admin.display(description="implies")
+    def implied_skills(self, obj):
+        return ", ".join(s.name for s in obj.implies.all()) or "-"
 
 
 @admin.register(SpecialistModel)
