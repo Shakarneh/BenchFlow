@@ -437,9 +437,9 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phase 0 **done**. **Phase 1 entities done** on `feat/phase-1-domain-entities` —
-`Skill`, `Level`, `SkillLevel`, `Specialist`, `Request` all built and green: **23 tests passing**,
-zero Django imports in `domain/`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+**Where we are:** Phases 0, 1 and 2 **done and merged to `main`**. **28 tests passing**, zero
+Django imports in `domain/`. Phase 2 refactor lives on `refactor/phase-2-dataclasses`.
+Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
 
 ```
 bench/
@@ -447,8 +447,13 @@ bench/
 ├── .gitignore · README.md          ├── domain/          skill · skill_level · specialist · request
 ├── CLAUDE.md · WORKFLOW.md         ├── application/     empty
 ├── requirements.txt                ├── infrastructure/  empty
-├── manage.py · tests/  (4 files)   └── interfaces/      empty
+├── manage.py · tests/  (5 files)   └── interfaces/      empty
 ```
+
+**Value object vs entity — the rule that decided `frozen=`:**
+`Skill` · `SkillLevel` are **value objects** (same contents = same thing, no life cycle) → frozen.
+`Specialist` · `Request` are **entities** (identity + life cycle, fields change) → mutable.
+This same distinction decides which tables get an ID in Phase 4.
 
 **The three matching rules now in code — this is the spine of the whole project:**
 | Method | Question it answers | Operator |
@@ -476,13 +481,14 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** finish Phase 1 — the remaining ⭐ concepts are **inheritance,
-polymorphism and abstract base classes** (a shared `Entity` base, or the first `Matcher` interface),
-then merge `feat/phase-1-domain-entities` into `develop` via PR. Then **Phase 2 (SOLID)**.
+**The immediate next step:** **Phase 3 — Testing as a discipline.** Extract the duplicated
+`make_specialist` / `make_request` helpers into `tests/conftest.py` as pytest fixtures, then write
+the next domain rule **test-first** (TDD). Then Phase 4 (databases).
 **Checkpoint:** Phase 7 matcher done by ~6 Aug, or the scope conversation returns (deadline 13 Aug).
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 1 Aug 2026 | 1→2 | Phase 1 closed: `Matcher` ABC + `GreedyMatcher` (filter → sort → take), PR merged to `develop` then `main`. **Phase 2 done**: SOLID mapped onto the existing code (4 of 5 already satisfied — the ABC did it), then the one real violation, DRY, fixed by converting all four entities to `@dataclass` — ~40 lines of hand-written dunders deleted, 28 tests still green | **abstract base classes** · **inheritance & polymorphism** · list comprehensions · `lambda` · slicing · **SOLID** (all five, against his own code) · **DRY** · `@dataclass` & type hints · **value object vs entity** (what `frozen=True` really means) · refactoring = behaviour identical, code better | 2 commits · 2 PRs |
 | 30 Jul 2026 | 1 | **Mode v2 adopted** after the AI-era strategy talk (three speeches analysed; verdict: plan content right, delivery too slow). Built `Level` · `SkillLevel.covers()` · `Specialist.covers()` · `Request.is_satisfied_by()` — Mohammed typed all three matching rules, Claude wrote the rest and the 23 tests. First real debugging session: three hand-typed bugs cornered by tests | enums & IntEnum · why enums start at 1 (falsy zero) · **composition vs inheritance** (has-a vs is-a) · **`Decimal` vs float for money** (and why to build it from a string) · `any()` vs `all()` · short-circuit evaluation · tests as the trust mechanism for code you didn't write | 3 commits |
 | 29 Jul 2026 | 0→1 | Phase 0 closed: README · smoke test · `develop` branch · Git Flow kept. Phase 1 opened on `feat/phase-1-domain-entities`: `Skill` with `__repr__`/`__eq__`/`__hash__` + 4 tests, pushed. Smoke test later removed as superseded | classes & objects · `__init__`/`self` · dunder methods · value vs identity equality · the eq⇒hash invariant · `NotImplemented` vs `NotImplementedError` · REPL workflow · branching model · `git rm` | 6 commits |
 | 29 Jul 2026 | 0 | Installed Python 3.13.14 alongside 3.14. Created `.venv` + `.gitignore`. Installed Django 5.2.16 + pytest, pinned in `requirements.txt`. `startproject config .` (dot layout, `config/` naming). Created the four layer folders as empty packages. `runserver` works | **virtual environments** (and that `.venv` never travels — `requirements.txt` does) · dependency pinning · semantic versioning · **Django** & batteries-included · `__init__.py` makes a folder a package · why `config/` beats a nested same-name folder | 4 commits |
