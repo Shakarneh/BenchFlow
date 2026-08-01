@@ -437,18 +437,30 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–3 **done**. **30 tests passing, 100% coverage of `domain/`**, zero Django
-imports in `domain/`. Phase 3 work is on `test/phase-3-fixtures` (PR it to `develop`, then `main`).
-Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+**Where we are:** Phases 0–4 **done**. **30 tests passing**, and `domain/` still has **zero Django
+imports** — verified by grep after the whole persistence layer landed. Phase 4 work is on
+`feat/phase-4-persistence`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+
+**Stack now live:** PostgreSQL **17.10** (service `postgresql-x64-17`, db `benchflow`, port 5432) ·
+`psycopg[binary]` · `python-dotenv`. Secrets are in `.env` (gitignored): `DJANGO_SECRET_KEY` and
+five `POSTGRES_*` vars. `settings.py` contains only variable *names*, never values.
 
 ```
 bench/
-├── .venv/              (ignored)   ├── config/          settings.py · urls.py · wsgi.py
-├── .gitignore · README.md          ├── domain/          skill · skill_level · specialist · request
-├── CLAUDE.md · WORKFLOW.md         ├── application/     empty
-├── requirements.txt                ├── infrastructure/  empty
-├── manage.py · tests/  (5 files)   └── interfaces/      empty
+├── .venv/ · .env       (ignored)   ├── config/          settings.py · urls.py · wsgi.py
+├── .gitignore · README.md          ├── domain/          skill · skill_level · specialist ·
+├── CLAUDE.md · WORKFLOW.md         │                    request · matcher · repositories
+├── requirements.txt                ├── application/     empty — Phase 9 fills this
+├── manage.py · tests/  (5 files)   ├── infrastructure/  models · admin · repositories ·
+                                    │                    migrations/ · management/commands/
+                                    └── interfaces/      empty — Phase 10
 ```
+
+**The port/adapter pair — how `domain/` uses a database without importing one:**
+`domain/repositories.py` declares the abstract `SpecialistRepository` (the **port**).
+`infrastructure/repositories.py` has `DjangoSpecialistRepository` (the **adapter**) plus
+`specialist_to_domain()`, which is the border where everything Django-shaped stops.
+Proved live: `GreedyMatcher` — unchanged since Phase 1 — matched against real PostgreSQL rows.
 
 **Value object vs entity — the rule that decided `frozen=`:**
 `Skill` · `SkillLevel` are **value objects** (same contents = same thing, no life cycle) → frozen.
@@ -463,8 +475,9 @@ This same distinction decides which tables get an ID in Phase 4.
 | `Request.is_satisfied_by(spec)` | all skills, free in time, **and** within budget? | `all()` + date + rate |
 | `GreedyMatcher.match(req, people)` | who do we propose? | filter → sort by cost → take headcount |
 
-**Known debt:** `SECRET_KEY` is hard-coded in `config/settings.py` — move to `.env` in Phase 15.
-PEP 8 nits (trailing spaces, spacing) in domain files — ruff/black clean them up in Phase 16.
+**Known debt:** no tests yet for `infrastructure/` (the repository is only proven by hand in the
+shell) — add one with a fake repository in Phase 9. PEP 8 nits in domain files — ruff/black clean
+them in Phase 16. `db.sqlite3` is a leftover from Phase 0 and can be deleted.
 
 **Mohammed's level — important.** True beginner. Cannot yet write code unaided and does not
 memorise methods or syntax. Long-term goal: Big Tech. His English is a real constraint — define
@@ -482,14 +495,15 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 4 — Databases & persistence.** Django ORM models in
-`infrastructure/` that mirror the domain, migrations, Django admin as a free UI, seeded demo data.
-⚠️ The dependency rule is about to be tested for real: `domain/` must STILL have zero Django
-imports when Phase 4 ends — the ORM models are a *separate* layer that maps to the entities.
+**The immediate next step:** **Phase 5 — the skill graph.** "Django ⇒ Python" resolved by graph
+traversal before matching: DAGs, BFS/DFS, transitive closure, Big-O. Needs a `implies` self-relation
+on `SkillModel` and a resolution service in `domain/`.
+**Useful commands:** `python manage.py seed_demo` rebuilds demo data · admin at `/admin/`.
 **Checkpoint:** Phase 7 matcher done by ~6 Aug, or the scope conversation returns (deadline 13 Aug).
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 1 Aug 2026 | 4 | **Phase 4 done.** PostgreSQL 17 installed; secrets moved to `.env` via `python-dotenv` (`SECRET_KEY` debt from Phase 0 cleared). 5 ORM models in `infrastructure/` with FKs, unique constraints, indexes and two join tables; migrations applied; Django admin with inlines; `seed_demo` management command (6 specialists, 7 skills, 3 requests). Then the centrepiece: the **Repository** — port in `domain/`, Django adapter in `infrastructure/` — and `GreedyMatcher` matched real PostgreSQL data **without a single change** | **relational modelling** · PK/FK · `on_delete` CASCADE vs PROTECT · join tables (when M2M needs extra data) · unique constraints & indexes · **migrations** · **transactions & ACID** (`@transaction.atomic`) · **N+1 query problem** & `prefetch_related` · **Repository pattern** · **ports & adapters** · **Dependency Inversion** — the 5th SOLID principle, finally demonstrable · env vars for secrets | 2 commits |
 | 1 Aug 2026 | 3 | **Phase 3 done.** Extracted `make_specialist`/`make_request` into `tests/conftest.py` as **factory fixtures** (frozen value objects stayed plain constants). Then a full **TDD cycle** on a real gap: `max_bill_rate` was being ignored — wrote the failing test first (incl. an exactly-on-budget boundary test), watched it go red for the right reason, then added the rule. Added `pytest-cov`: **100% of `domain/`** | **fixtures & `conftest.py`** (auto-discovery, injection by parameter name) · **factory fixture** pattern · why immutable test data needs no fixture · **TDD red→green→refactor** · **boundary testing** (`<=` vs `<`) · **what coverage really means** — seen live: `request.py` showed 100% coverage *while a test was failing*, because coverage can't measure code that was never written | 3 commits |
 | 1 Aug 2026 | 1→2 | Phase 1 closed: `Matcher` ABC + `GreedyMatcher` (filter → sort → take), PR merged to `develop` then `main`. **Phase 2 done**: SOLID mapped onto the existing code (4 of 5 already satisfied — the ABC did it), then the one real violation, DRY, fixed by converting all four entities to `@dataclass` — ~40 lines of hand-written dunders deleted, 28 tests still green | **abstract base classes** · **inheritance & polymorphism** · list comprehensions · `lambda` · slicing · **SOLID** (all five, against his own code) · **DRY** · `@dataclass` & type hints · **value object vs entity** (what `frozen=True` really means) · refactoring = behaviour identical, code better | 2 commits · 2 PRs |
 | 30 Jul 2026 | 1 | **Mode v2 adopted** after the AI-era strategy talk (three speeches analysed; verdict: plan content right, delivery too slow). Built `Level` · `SkillLevel.covers()` · `Specialist.covers()` · `Request.is_satisfied_by()` — Mohammed typed all three matching rules, Claude wrote the rest and the 23 tests. First real debugging session: three hand-typed bugs cornered by tests | enums & IntEnum · why enums start at 1 (falsy zero) · **composition vs inheritance** (has-a vs is-a) · **`Decimal` vs float for money** (and why to build it from a string) · `any()` vs `all()` · short-circuit evaluation · tests as the trust mechanism for code you didn't write | 3 commits |
