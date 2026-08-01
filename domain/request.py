@@ -21,8 +21,9 @@ class Request:
     max_bill_rate: Decimal
 
     def is_satisfied_by(self, specialist: Specialist) -> bool:
-        """Does this specialist meet EVERY requirement, and start in time?"""
+        """Does this specialist meet EVERY requirement, start in time, and fit the budget?"""
         return (
             all(specialist.covers(required) for required in self.required_skills)
             and specialist.available_from <= self.starts_on
+            and specialist.cost_rate <= self.max_bill_rate
         )
