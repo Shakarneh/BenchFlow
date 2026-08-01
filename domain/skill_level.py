@@ -1,26 +1,31 @@
+from dataclasses import dataclass
 from enum import IntEnum
+
+from domain.skill import Skill
 
 
 class Level(IntEnum):
+    """Proficiency in one skill. The numbers define the ordering."""
+
     JUNIOR = 1
-    MIDDLE = 2 
+    MIDDLE = 2
     SENIOR = 3
-    
+
+
+@dataclass(frozen=True)
 class SkillLevel:
-    def __init__(self, skill, level ):
-        self.skill = skill 
-        self.level = level
-        
+    """One skill held at one level, e.g. Django at Senior.
+
+    Composition: it HAS a Skill and HAS a Level rather than being either.
+    """
+
+    skill: Skill
+    level: Level
+
     def covers(self, required):
+        """Does what I have satisfy what is required?
+
+        Same skill, and at least as senior. The skill must match first --
+        a very high level in Django says nothing about Python.
+        """
         return self.skill == required.skill and self.level >= required.level
-
-    def __repr__(self):
-        return f"SkillLevel({self.skill!r}, {self.level!r})"
-
-    def __eq__(self, other):
-        if not isinstance(other, SkillLevel):
-            return NotImplemented
-        return self.skill == other.skill and self.level == other.level
-
-    def __hash__(self):
-        return hash((self.skill, self.level))

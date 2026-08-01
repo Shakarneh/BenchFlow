@@ -1,12 +1,24 @@
+from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+
+from domain.skill_level import SkillLevel
+
+
+@dataclass
 class Specialist:
-    def __init__(self, full_name, cost_rate, available_from, skills):
-        self.full_name = full_name
-        self.cost_rate = cost_rate
-        self.available_from = available_from
-        self.skills = skills
+    """An engineer we can place with a client.
+
+    An entity, not a value object: two specialists called "Ivan Petrov" are
+    not the same person, and a specialist's rate and skills change over time.
+    Hence NOT frozen.
+    """
+
+    full_name: str
+    cost_rate: Decimal
+    available_from: date
+    skills: list[SkillLevel]
 
     def covers(self, required):
+        """Do ANY of my skills satisfy this one requirement?"""
         return any(skill_level.covers(required) for skill_level in self.skills)
-        
-    def __repr__(self):
-        return f"Specialist({self.full_name!r})"
