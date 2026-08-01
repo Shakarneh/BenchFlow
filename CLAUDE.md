@@ -28,9 +28,11 @@ Never execute `git add`, `git commit`, `git push`, `git checkout`, `git merge`, 
 command. **Give me the commands and I will run them.** One command per code block.
 Stage files **by name** — never `git add .`.
 
-### 🔴 Rule 4 — Teach, don't just build
-I want to understand every line. Assume I know nothing. When we hit a concept, stop and teach it
-using the Concept Card in §2 before we write any code. I type the core logic myself.
+### 🔴 Rule 4 — Teach, don't just build *(mode v2 — 30 Jul 2026)*
+I must understand everything we ship — but understanding is proven by **explaining, not typing**.
+Claude writes most of the code and explains it in plain language. I type only the core: business
+rules and algorithm hearts — the ~20% I must defend in an interview. Before every commit I explain
+back, in 2–3 sentences, what the code does and why. If I can't, we stop and go again.
 
 ### 🔴 Rule 5 — Simplest possible version first
 Build every concept in its simplest, clearest form. No cleverness. No premature optimisation.
@@ -123,14 +125,18 @@ WHAT I'LL BE ABLE TO SAY IN AN INTERVIEW
 ════════════════════════════════════════════════
 ```
 
+> **Mode v2 (30 Jul 2026):** the default is now the **short card** — WHAT IT IS · WHY HERE · THE
+> IDEA · the interview line, a line or two each. The full template above is reserved for ⭐⭐
+> topics: the matching engine (Phase 7) and architecture (Phase 9).
+
 ### 2.2 The loop for every single feature
 
 ```
 1. You explain WHAT we're building next and WHY          →  I approve
 2. If a new concept is involved → Concept Card            →  I confirm I understand
 3. You explain the design in plain language               →  I approve
-4. You scaffold; I type the core logic myself
-5. You explain what we just wrote, line by line
+4. Claude writes most of it; I type only the core logic (business rules, algorithm hearts)
+5. Claude explains what was written; I explain it BACK in 2–3 sentences before any commit
 6. You give me the git commands                           →  I run them
 7. You update this file
 ```
@@ -380,7 +386,10 @@ health checks · monitoring
 - **Deliverable:** a UI good enough to demo the matcher visually
 
 ### PHASE 21 — Documentation & showcase
-- Real README, architecture docs, the ADR set, diagrams
+- **The Grand Walkthrough (mode v2):** we read the ENTIRE codebase together, file by file, and I
+  explain each one back — the final proof of understanding
+- Real README, architecture docs, the ADR set, diagrams — including a section on the AI-assisted,
+  spec-driven workflow this project was built with
 - LinkedIn post · portfolio entry on `mohammedshakarneh.com` · interview talking points
 - **Deliverable:** a project I can defend in a room
 
@@ -411,7 +420,7 @@ Cycle: branch → work → **I** commit → **I** push → PR → CI green → m
 ## 8. DEFINITION OF DONE
 
 A phase is done when **all** of these are true:
-- [ ] I can explain every line out loud, without notes
+- [ ] I can explain what every file does and why, out loud — and the core logic line by line
 - [ ] Tests exist and pass
 - [ ] Lint, format and type checks are clean
 - [ ] The concepts used are named and carded in this file
@@ -428,26 +437,38 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phase 0, ~80% done. Python 3.13.14 + Django 5.2.16 installed in `.venv`,
-`runserver` shows the rocket, the four layer folders exist as empty packages.
-Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+**Where we are:** Phase 0 **done**. **Phase 1 entities done** on `feat/phase-1-domain-entities` —
+`Skill`, `Level`, `SkillLevel`, `Specialist`, `Request` all built and green: **23 tests passing**,
+zero Django imports in `domain/`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
 
 ```
 bench/
 ├── .venv/              (ignored)   ├── config/          settings.py · urls.py · wsgi.py
-├── .gitignore                      ├── domain/          empty — Phase 1 fills this
+├── .gitignore · README.md          ├── domain/          skill · skill_level · specialist · request
 ├── CLAUDE.md · WORKFLOW.md         ├── application/     empty
 ├── requirements.txt                ├── infrastructure/  empty
-├── manage.py                       └── interfaces/      empty
+├── manage.py · tests/  (4 files)   └── interfaces/      empty
 ```
 
-**Still open in Phase 0:** `README.md` · one example pytest test · `develop` branch.
-**Known debt:** `SECRET_KEY` is hard-coded in `config/settings.py`. Move it to `.env` in Phase 15.
+**The three matching rules now in code — this is the spine of the whole project:**
+| Method | Question it answers | Operator |
+|---|---|---|
+| `SkillLevel.covers(required)` | does this one skill cover it? | `==` skill **and** `>=` level |
+| `Specialist.covers(required)` | do **any** of my skills cover it? | `any()` |
+| `Request.is_satisfied_by(spec)` | does this person meet **all** requirements, in time? | `all()` **and** date check |
+
+**Known debt:** `SECRET_KEY` is hard-coded in `config/settings.py` — move to `.env` in Phase 15.
+PEP 8 nits (trailing spaces, spacing) in domain files — ruff/black clean them up in Phase 16.
 
 **Mohammed's level — important.** True beginner. Cannot yet write code unaided and does not
-memorise methods or syntax. Knows roughly what `.venv` and `.gitignore` are for, knows some Git,
-knows nothing about Django. **Explain everything. Assume nothing. Keep replies short — long
-replies overwhelm and demotivate.** He types the core logic himself; Claude scaffolds only.
+memorise methods or syntax. Long-term goal: Big Tech. His English is a real constraint — define
+terms, offer simpler wording when something doesn't land. **Explain the WHY of every command at
+the moment it's given. Full reasoning is welcome; option-surveys and padding are not.**
+
+**Mode v2 (Decision 11) governs everything:** Claude writes most code and explains it; Mohammed
+types only business rules and algorithm cores; the gate before every commit is him explaining the
+code back in 2–3 sentences. Short concept cards by default (§2.1 note). Phase 21 ends with the
+Grand Walkthrough of the whole codebase.
 
 **Shell:** Mohammed uses **Git Bash**, not PowerShell. Give every command in bash syntax
 (e.g. venv activation is `source .venv/Scripts/activate`, not `Activate.ps1`).
@@ -455,11 +476,15 @@ replies overwhelm and demotivate.** He types the core logic himself; Claude scaf
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** finish Phase 0 — `README.md`, one example pytest test — then
-**Phase 1 (OOP)**, which is the big one. Post the Git branching card at the start of Phase 1.
+**The immediate next step:** finish Phase 1 — the remaining ⭐ concepts are **inheritance,
+polymorphism and abstract base classes** (a shared `Entity` base, or the first `Matcher` interface),
+then merge `feat/phase-1-domain-entities` into `develop` via PR. Then **Phase 2 (SOLID)**.
+**Checkpoint:** Phase 7 matcher done by ~6 Aug, or the scope conversation returns (deadline 13 Aug).
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 30 Jul 2026 | 1 | **Mode v2 adopted** after the AI-era strategy talk (three speeches analysed; verdict: plan content right, delivery too slow). Built `Level` · `SkillLevel.covers()` · `Specialist.covers()` · `Request.is_satisfied_by()` — Mohammed typed all three matching rules, Claude wrote the rest and the 23 tests. First real debugging session: three hand-typed bugs cornered by tests | enums & IntEnum · why enums start at 1 (falsy zero) · **composition vs inheritance** (has-a vs is-a) · **`Decimal` vs float for money** (and why to build it from a string) · `any()` vs `all()` · short-circuit evaluation · tests as the trust mechanism for code you didn't write | 3 commits |
+| 29 Jul 2026 | 0→1 | Phase 0 closed: README · smoke test · `develop` branch · Git Flow kept. Phase 1 opened on `feat/phase-1-domain-entities`: `Skill` with `__repr__`/`__eq__`/`__hash__` + 4 tests, pushed. Smoke test later removed as superseded | classes & objects · `__init__`/`self` · dunder methods · value vs identity equality · the eq⇒hash invariant · `NotImplemented` vs `NotImplementedError` · REPL workflow · branching model · `git rm` | 6 commits |
 | 29 Jul 2026 | 0 | Installed Python 3.13.14 alongside 3.14. Created `.venv` + `.gitignore`. Installed Django 5.2.16 + pytest, pinned in `requirements.txt`. `startproject config .` (dot layout, `config/` naming). Created the four layer folders as empty packages. `runserver` works | **virtual environments** (and that `.venv` never travels — `requirements.txt` does) · dependency pinning · semantic versioning · **Django** & batteries-included · `__init__.py` makes a folder a package · why `config/` beats a nested same-name folder | 4 commits |
 | 29 Jul 2026 | 0 | Read both planning docs. Renamed project Bench → benchFlow. Fixed 7 contradictions between the two files (see Decisions 6–8). Defined "domain" in §4 and §10. Corrected the dependency-rule diagram in `WORKFLOW.md` §4 | what *domain* means in software · `.gitignore` is for secrets and regenerable junk — **not** documentation | 2 commits |
 
@@ -476,6 +501,7 @@ was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 | 8 | pytest installed in Phase 0; `Decimal` introduced in Phase 1 | Phase 1 demanded tests before Phase 3 gave us pytest; money fields appear in Phase 1, not Phase 12 | 29 Jul 2026 |
 | 9 | **Python 3.13 + Django 5.2 LTS** | Whole stack (DRF, Celery, psycopg, mypy) is proven on it. Python 3.14 was already installed but the ecosystem lags new releases | 29 Jul 2026 |
 | 10 | **No phases cut** — all 22 inside 15 days | Mohammed's explicit decision after Claude advised cutting. Pace increases instead: shorter cards, no detours | 29 Jul 2026 |
+| 11 | **Mode v2** — Claude writes most code; Mohammed types core logic only; explain-back gate before every commit; short cards; Phase 21 = Grand Walkthrough | Typing every line couldn't reach 13 Aug — and reading/verifying is the durable AI-era skill. The explain-back gate is the anti-vibe-coding mechanism | 30 Jul 2026 |
 
 > ⚠️ Decision 7 is Claude's call, made to resolve a contradiction. Reversible — say so and we flip it.
 
