@@ -97,6 +97,46 @@ class RequestModel(models.Model):
         return f"{self.client_name} x{self.headcount} from {self.starts_on}"
 
 
+class AllocationModel(models.Model):
+    """Time booked on a specialist's calendar.
+
+    Both dates are INCLUSIVE. `fraction` is the share of their working time:
+    0.50 means half time. The database itself enforces both invariants below,
+    so no application bug can write a nonsense row.
+    """
+
+    specialist = models.ForeignKey(
+        SpecialistModel, on_delete=models.CASCADE, related_name="allocations"
+    )
+    request = models.ForeignKey(
+        RequestModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="allocations",
+    )
+    starts_on = models.DateField(db_index=True)
+    ends_on = models.DateField(db_index=True)
+    fraction = models.DecimalField(max_digits=3, decimal_places=2)
+
+    class Meta:
+        db_table = "allocation"
+        ordering = ["starts_on"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(ends_on__gte=models.F("starts_on")),
+                name="allocation_ends_on_or_after_it_starts",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(fraction__gt=0) & models.Q(fraction__lte=1),
+                name="allocation_fraction_between_zero_and_one",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.specialist} {self.fraction:.0%} {self.starts_on}..{self.ends_on}"
+
+
 class RequestRequirementModel(models.Model):
     """One skill required by one request, at a minimum level."""
 

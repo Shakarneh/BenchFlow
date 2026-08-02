@@ -4,6 +4,7 @@ This is the ONLY place that knows both worlds -- ORM rows on one side,
 pure domain objects on the other. Its whole job is translation.
 """
 
+from domain.allocation import Allocation
 from domain.repositories import SkillGraphRepository, SpecialistRepository
 from domain.skill import Skill
 from domain.skill_graph import SkillGraph
@@ -26,6 +27,10 @@ def specialist_to_domain(row: SpecialistModel) -> Specialist:
             SkillLevel(Skill(link.skill.name), Level(link.level))
             for link in row.skills.all()
         ],
+        allocations=[
+            Allocation(booking.starts_on, booking.ends_on, booking.fraction)
+            for booking in row.allocations.all()
+        ],
     )
 
 
@@ -33,7 +38,7 @@ class DjangoSpecialistRepository(SpecialistRepository):
     """Loads specialists out of PostgreSQL via the Django ORM."""
 
     def all(self) -> list[Specialist]:
-        rows = SpecialistModel.objects.prefetch_related("skills__skill")
+        rows = SpecialistModel.objects.prefetch_related("skills__skill", "allocations")
         return [specialist_to_domain(row) for row in rows]
 
 

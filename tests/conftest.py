@@ -44,12 +44,14 @@ def make_specialist():
         cost_rate="45.50",
         available_from=date(2026, 8, 1),
         full_name="Ivan Petrov",
+        allocations=(),
     ):
         return Specialist(
             full_name=full_name,
             cost_rate=Decimal(cost_rate),
             available_from=available_from,
             skills=list(skills),
+            allocations=list(allocations),
         )
 
     return _make

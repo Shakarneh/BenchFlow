@@ -13,6 +13,7 @@ from django.db import transaction
 
 from domain.skill_level import Level
 from infrastructure.models import (
+    AllocationModel,
     RequestModel,
     RequestRequirementModel,
     SkillModel,
@@ -54,12 +55,33 @@ REQUESTS = [
 ]
 
 
+# specialist -> [(starts_on, ends_on, fraction), ...]  both dates INCLUSIVE
+ALLOCATIONS = {
+    "Alice Johnson": [
+        (date(2026, 8, 10), date(2026, 12, 31), "0.50"),  # half-time, free for more
+    ],
+    "Bob Smith": [
+        (date(2026, 8, 15), date(2026, 11, 30), "1.00"),  # fully booked
+    ],
+    "Carol Davis": [
+        (date(2026, 9, 1), date(2026, 9, 30), "0.25"),
+        (date(2026, 10, 1), date(2026, 12, 31), "0.50"),  # sequential, never overlap
+    ],
+    "Dmitry Volkov": [],  # on the bench -- costing money
+    "Elena Petrova": [
+        (date(2026, 8, 20), date(2026, 9, 20), "0.75"),
+    ],
+    "Farid Hassan": [],  # on the bench
+}
+
+
 class Command(BaseCommand):
     help = "Wipe and reseed the demo dataset"
 
     @transaction.atomic
     def handle(self, *args, **options):
         # Order matters: children before parents, or foreign keys complain.
+        AllocationModel.objects.all().delete()
         SpecialistSkillModel.objects.all().delete()
         RequestRequirementModel.objects.all().delete()
         SpecialistModel.objects.all().delete()
@@ -81,6 +103,13 @@ class Command(BaseCommand):
                 SpecialistSkillModel.objects.create(
                     specialist=specialist, skill=skills[skill_name], level=level.value
                 )
+            for starts_on, ends_on, fraction in ALLOCATIONS.get(full_name, []):
+                AllocationModel.objects.create(
+                    specialist=specialist,
+                    starts_on=starts_on,
+                    ends_on=ends_on,
+                    fraction=Decimal(fraction),
+                )
 
         for client, headcount, starts_on, max_rate, requirements in REQUESTS:
             request = RequestModel.objects.create(
@@ -97,6 +126,7 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {len(SKILLS)} skills, {len(SPECIALISTS)} specialists, "
-                f"{len(REQUESTS)} requests."
+                f"{len(REQUESTS)} requests, "
+                f"{sum(len(v) for v in ALLOCATIONS.values())} allocations."
             )
         )
