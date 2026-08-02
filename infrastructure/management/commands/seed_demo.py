@@ -47,11 +47,14 @@ SPECIALISTS = [
     ("Farid Hassan", "60.00", date(2026, 10, 1), [("Django", Level.MIDDLE), ("React", Level.MIDDLE)]),
 ]
 
-# (client, headcount, starts_on, max_bill_rate, [(skill, level), ...])
+# (client, headcount, starts_on, ends_on, max_bill_rate, fraction, [(skill, level), ...])
 REQUESTS = [
-    ("BCS Mir Investicij", 2, date(2026, 9, 15), "70.00", [("Django", Level.MIDDLE)]),
-    ("Alfa Capital", 1, date(2026, 9, 1), "90.00", [("Go", Level.SENIOR), ("Docker", Level.MIDDLE)]),
-    ("MKB", 3, date(2026, 10, 1), "65.00", [("Python", Level.MIDDLE)]),
+    ("BCS Mir Investicij", 2, date(2026, 9, 15), date(2027, 3, 15), "70.00", "0.50",
+     [("Django", Level.MIDDLE)]),
+    ("Alfa Capital", 1, date(2026, 9, 1), date(2026, 12, 31), "90.00", "1.00",
+     [("Go", Level.SENIOR), ("Docker", Level.MIDDLE)]),
+    ("MKB", 3, date(2026, 10, 1), date(2027, 4, 1), "65.00", "1.00",
+     [("Python", Level.MIDDLE)]),
 ]
 
 
@@ -111,12 +114,14 @@ class Command(BaseCommand):
                     fraction=Decimal(fraction),
                 )
 
-        for client, headcount, starts_on, max_rate, requirements in REQUESTS:
+        for client, headcount, starts_on, ends_on, max_rate, fraction, requirements in REQUESTS:
             request = RequestModel.objects.create(
                 client_name=client,
                 headcount=headcount,
                 starts_on=starts_on,
+                ends_on=ends_on,
                 max_bill_rate=Decimal(max_rate),
+                fraction=Decimal(fraction),
             )
             for skill_name, level in requirements:
                 RequestRequirementModel.objects.create(
