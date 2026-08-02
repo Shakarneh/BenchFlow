@@ -63,15 +63,19 @@ def make_request():
         required_skills=(),
         headcount=1,
         starts_on=date(2026, 9, 1),
+        ends_on=date(2026, 12, 31),
         max_bill_rate="120.00",
         client_name="BCS",
+        fraction="1.00",
     ):
         return Request(
             client_name=client_name,
             required_skills=list(required_skills),
             headcount=headcount,
             starts_on=starts_on,
+            ends_on=ends_on,
             max_bill_rate=Decimal(max_bill_rate),
+            fraction=Decimal(fraction),
         )
 
     return _make
