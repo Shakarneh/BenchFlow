@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import replace
+from decimal import Decimal
 
 from domain.skill_graph import SkillGraph
 
@@ -32,6 +33,33 @@ class Matcher(ABC):
     @abstractmethod
     def match(self, request, specialists):
         """Return the specialists proposed for this request, best first."""
+
+    def assign(self, requests, specialists):
+        """Fill SEVERAL competing requests from one shared pool of people.
+
+        Returns [(request, [specialists]), ...]. Nobody is proposed twice --
+        once someone is assigned they leave the pool.
+        """
+        remaining = list(specialists)
+        results = []
+        for request in requests:
+            chosen = self.match(request, remaining)
+            results.append((request, chosen))
+            for specialist in chosen:
+                remaining.remove(specialist)
+        return results
+
+    @staticmethod
+    def unfilled(results):
+        """How many head are still missing across all requests."""
+        return sum(request.headcount - len(chosen) for request, chosen in results)
+
+    @staticmethod
+    def total_cost(results):
+        """Total cost rate of everyone assigned."""
+        return sum(
+            (s.cost_rate for _, chosen in results for s in chosen), Decimal("0.00")
+        )
 
 
 class GreedyMatcher(Matcher):
