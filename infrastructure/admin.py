@@ -65,7 +65,7 @@ class SpecialistAdmin(admin.ModelAdmin):
 
 @admin.register(RequestModel)
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ["client_name", "headcount", "starts_on", "max_bill_rate"]
+    list_display = ["client_name", "headcount", "starts_on", "ends_on", "fraction", "max_bill_rate"]
     list_filter = ["starts_on"]
     search_fields = ["client_name"]
     inlines = [RequestRequirementInline]
