@@ -437,10 +437,19 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–7 **done — the centrepiece is built.** **579 tests passing**
-(500 of them randomised oracle checks), and `domain/` still has **zero Django imports**.
-Phase 7 work is on `feat/phase-7-matching-engine`.
-Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+**Where we are:** Phases 0–8 **done.** **612 tests passing** (500 of them randomised oracle
+checks), and `domain/` still has **zero Django imports**. Phase 8 work is on
+`feat/phase-8-design-patterns`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+
+**The five patterns in use — full write-up in [`docs/patterns.md`](docs/patterns.md):**
+| Pattern | Where | What it bought |
+|---|---|---|
+| **Strategy** | `domain/matcher.py` | swapping greedy → Hungarian changed zero calling code |
+| **Repository** | `domain/repositories.py` + infra adapters | matcher runs on PostgreSQL without importing it |
+| **Specification** | `domain/specifications.py` | rejections explain themselves in plain English |
+| **State** | `domain/pipeline.py` | illegal transitions raise; append-only audit trail |
+| **Observer** | `domain/events.py` | pipeline announces; SLA/audit/email subscribe |
+| ~~Factory~~ | — | **rejected** — `@dataclass` + repository mappers already cover it |
 
 **The three matchers — all behind the same `Matcher` ABC, so they are interchangeable:**
 | Strategy | Complexity | Optimal? | Role |
@@ -507,10 +516,12 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 8 — design patterns.** Strategy (already half-done via the
-`Matcher` ABC), Specification (composable requirement rules — `Request.is_satisfied_by` currently
-hard-codes its four rules), State (the request pipeline), Repository (already done in Phase 4),
-Observer, Factory. Each gets its own card and its own commit.
+**The immediate next step:** **Phase 9 — architecture.** The four folders already exist; this phase
+*formalises* them. Fill `application/` with use cases (`propose_candidates(request_id)`) that
+orchestrate repository + matcher + events, wire the real adapters at startup, add `import-linter`
+to enforce the dependency rule, write the first ADRs, and deliberately break one import to watch
+CI go red. Also clears the standing debt: **no tests for `infrastructure/` yet** — add one using a
+fake repository, which is exactly what the ports make possible.
 **Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` · `/admin/`.
 
 ✅ **Both pieces of wiring debt are cleared.** `SkillGraph.expand()` runs inside `Matcher.resolved()`
@@ -520,6 +531,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 3 Aug 2026 | 8 | **Phase 8 done.** Two patterns were already in the code (Strategy, Repository) — named them rather than rebuilt them. Then three real builds: **Specification** (`Request.is_satisfied_by` refactored from one boolean into composable rule objects with `&` `\|` `~`, and `reasons_against()` that names every failure), **State** (`Pipeline` with an `ALLOWED` transition table, Mohammed typed the guard; frozen append-only history; `time_to_fill()` = the «3 дня» promise), **Observer** (`EventBus`, frozen past-tense events, pipeline announces without knowing who listens). Factory considered and **rejected** in writing. `docs/patterns.md` | **Specification** & why composable rules beat a compound boolean (explainability as a feature) · dunder operator overloading (`__and__`/`__or__`/`__invert__`) · **State machines** — rules as a data table, not branching code; illegal states unrepresentable · audit trails & frozen history · **Observer / domain events** · past-tense event naming · Open/Closed at system level · **when a pattern is overkill** — and writing the rejection down | 4 commits |
 | 2 Aug 2026 | 7 | **Phase 7 done — the centrepiece.** Cleared both pieces of wiring debt (skill graph + calendar now run inside real matching, pinned by tests). Added multi-request `assign()` so requests compete for one pool. Then three matchers: `GreedyMatcher`, exhaustive `OptimalMatcher` (Mohammed typed `is_better` — the objective function), and `HungarianMatcher` (Mohammed typed `cell_cost` — the penalty encoding). Verified by **oracle testing**: 200 random worlds where Hungarian must match the exhaustive answer exactly, plus 300 more asserting invariants. Benchmarked across 7 world sizes; wrote up `docs/matching.md`. **579 tests** | **the assignment problem** · bipartite graphs · **locally vs globally optimal** (greedy strands a client to save 47) · order-dependence as a correctness smell · **objective functions** as business decisions · **the Hungarian algorithm** & potentials as generalised row/column reduction · **penalty encoding** to turn "fill first, then save" into pure arithmetic · integer cents for exactness · padding to square · **oracle testing** — how to trust an algorithm you did not derive · seeded randomised testing · O(n log n) vs O(k^n) vs O(n³) measured, not claimed | 4 commits |
 | 2 Aug 2026 | 6 | **Phase 6 done.** `domain/allocation.py` — `Allocation` (frozen, inclusive dates) + `Calendar`. `peak_load()` is a **sweep-line** Mohammed typed: each booking becomes `+fraction` at the start and `-fraction` the day *after* the end, sort, one pass tracking a running max. `Specialist` gained `allocations` + `is_free_for()`, so part-time people can take part-time work. DB: `AllocationModel` with two `CheckConstraint`s (`ends_on >= starts_on`, `0 < fraction <= 1`) enforced by PostgreSQL itself; admin shows a live **peak load** column — Carol was pushed to **125% OVER** by hand to watch it fire. 18 new tests | **intervals** · **inclusive vs exclusive ends** (the `+1 day` release, pinned by boundary tests one day apart) · **sweep-line** and why it beats pairwise O(n²) · **O(n log n)** — the sort dominates · **fractional capacity** · tuple sort order so a release precedes an acquire on the same day · DB `CheckConstraint` · `on_delete=SET_NULL` to preserve history | *(this batch)* |
 | 1 Aug 2026 | 5 | **Phase 5 done.** `domain/skill_graph.py` — `SkillGraph.implied_by()` is a **BFS transitive closure** (Mohammed typed the loop), `expand()` adds implied skills at the same level and keeps the highest on conflict. 9 tests including a deliberate **cycle test** (wrong guard = infinite hang, not a failure). DB side: `implies` self-M2M on `SkillModel` with `symmetrical=False`, `DjangoSkillGraphRepository` loads the whole DAG in one query, `seed_demo` seeds 7 implications. Proved live: Alice knows only Django, and covers *Programming* two hops away | **graphs** · **DAGs** & why cycles are fatal · **BFS** and why `popleft()` makes it breadth-first · **transitive closure** · the visited-set as cycle guard · **Big-O: O(V+E)** · `deque` vs `list.pop(0)` (O(1) vs O(n)) · self-referencing many-to-many · loading a whole graph vs walking it hop-by-hop | 2 commits |
