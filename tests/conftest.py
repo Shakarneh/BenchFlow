@@ -22,6 +22,7 @@ DJANGO = Skill("Django")
 PYTHON = Skill("Python")
 GO = Skill("Go")
 DOCKER = Skill("Docker")
+PROGRAMMING = Skill("Programming")
 
 DJANGO_JUNIOR = SkillLevel(DJANGO, Level.JUNIOR)
 DJANGO_MIDDLE = SkillLevel(DJANGO, Level.MIDDLE)

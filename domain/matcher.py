@@ -62,6 +62,80 @@ class Matcher(ABC):
         )
 
 
+class OptimalMatcher(Matcher):
+    """Exhaustive search over every complete arrangement.
+
+    Slow -- the number of arrangements grows exponentially -- but provably
+    optimal, because it examines all of them. Its real job is to be the
+    oracle the faster algorithm is checked against.
+    """
+
+    def match(self, request, specialists):
+        """One request in isolation: cheapest-first IS optimal.
+
+        With nothing competing for the same people, there is no arrangement
+        to get wrong. Greedy only fails when requests compete.
+        """
+        return sorted(self.eligible(request, specialists), key=lambda s: s.cost_rate)[
+            : request.headcount
+        ]
+
+    def is_better(self, filled, cost, best_filled, best_cost):
+        """Is this arrangement better than the best one found so far?
+
+        THE OBJECTIVE FUNCTION -- the business rule the whole search obeys.
+        """
+        if filled != best_filled:
+            return filled > best_filled
+        return cost < best_cost
+
+    def assign(self, requests, specialists):
+        # One slot per head required: headcount=2 means two slots to fill.
+        slots = [(index, request) for index, request in enumerate(requests)
+                 for _ in range(request.headcount)]
+        resolved = [self.resolved(s) for s in specialists]
+
+        # Precompute eligibility once -- otherwise we re-check it thousands
+        # of times inside the recursion.
+        fits = [
+            [request.is_satisfied_by(resolved[j]) for j in range(len(specialists))]
+            for _, request in slots
+        ]
+
+        best = {"filled": -1, "cost": Decimal("0.00"), "picks": []}
+
+        def search(slot_index, used, picks, filled, cost):
+            if slot_index == len(slots):
+                if self.is_better(filled, cost, best["filled"], best["cost"]):
+                    best.update(filled=filled, cost=cost, picks=list(picks))
+                return
+
+            # Option 1: assign someone eligible and not yet used.
+            for j, specialist in enumerate(specialists):
+                if j in used or not fits[slot_index][j]:
+                    continue
+                used.add(j)
+                picks.append(j)
+                search(slot_index + 1, used, picks, filled + 1, cost + specialist.cost_rate)
+                picks.pop()
+                used.remove(j)
+
+            # Option 2: leave this slot empty. Sometimes correct -- holding a
+            # specialist back for a slot only they can fill.
+            picks.append(None)
+            search(slot_index + 1, used, picks, filled, cost)
+            picks.pop()
+
+        search(0, set(), [], 0, Decimal("0.00"))
+
+        # Regroup the flat slot picks back into one list per request.
+        chosen_per_request = [[] for _ in requests]
+        for (request_index, _), pick in zip(slots, best["picks"]):
+            if pick is not None:
+                chosen_per_request[request_index].append(specialists[pick])
+        return list(zip(requests, chosen_per_request))
+
+
 class GreedyMatcher(Matcher):
     """The simplest strategy: take everyone who qualifies, cheapest first.
 
