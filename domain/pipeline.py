@@ -61,10 +61,16 @@ class Transition:
 
 @dataclass
 class Pipeline:
-    """Where a request is, and everywhere it has been."""
+    """Where a request is, and everywhere it has been.
+
+    Publishes an event on every accepted move. It does not know or care who
+    is listening -- that is the point of Observer.
+    """
 
     state: RequestState = RequestState.DRAFT
     history: list[Transition] = field(default_factory=list)
+    client_name: str = ""
+    events: "EventBus | None" = None
 
     def can_move_to(self, target: RequestState) -> bool:
         """Is this move permitted from where we are now?"""
@@ -77,10 +83,32 @@ class Pipeline:
                 f"cannot move from {self.state.value} to {target.value}; "
                 f"allowed: {sorted(s.value for s in ALLOWED[self.state]) or 'none (terminal)'}"
             )
-        self.history.append(
-            Transition(self.state, target, at or datetime.now(), by)
+        moment = at or datetime.now()
+        self.history.append(Transition(self.state, target, moment, by))
+        previous, self.state = self.state, target
+        self._announce(previous, target, moment, by)
+
+    def _announce(self, previous, target, moment, by):
+        """Publish what happened. Nobody listening is a perfectly valid case."""
+        if self.events is None:
+            return
+
+        from domain.events import RequestPlaced, RequestStateChanged, SourcingStarted
+
+        self.events.publish(
+            RequestStateChanged(moment, self.client_name, previous, target, by)
         )
-        self.state = target
+        if target is SLA_STARTS_AT:
+            self.events.publish(SourcingStarted(moment, self.client_name))
+        if target is RequestState.PLACED:
+            elapsed = self.time_to_fill()
+            self.events.publish(
+                RequestPlaced(
+                    moment,
+                    self.client_name,
+                    elapsed.total_seconds() / 3600 if elapsed else None,
+                )
+            )
 
     @property
     def is_terminal(self) -> bool:
