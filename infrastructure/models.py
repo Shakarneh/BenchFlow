@@ -8,6 +8,8 @@ Note the import direction: infrastructure imports domain (for Level), never
 the other way round. That is the dependency rule holding.
 """
 
+from decimal import Decimal
+
 from django.db import models
 
 from domain.skill_level import Level
@@ -87,11 +89,28 @@ class RequestModel(models.Model):
     client_name = models.CharField(max_length=200)
     headcount = models.PositiveIntegerField()
     starts_on = models.DateField(db_index=True)
+    ends_on = models.DateField(db_index=True)
     max_bill_rate = models.DecimalField(max_digits=10, decimal_places=2)
+    fraction = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=Decimal("1.00"),
+        help_text="Share of a specialist's time this engagement needs. 0.50 = half time.",
+    )
 
     class Meta:
         db_table = "request"
         ordering = ["starts_on"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(ends_on__gte=models.F("starts_on")),
+                name="request_ends_on_or_after_it_starts",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(fraction__gt=0) & models.Q(fraction__lte=1),
+                name="request_fraction_between_zero_and_one",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.client_name} x{self.headcount} from {self.starts_on}"

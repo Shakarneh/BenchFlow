@@ -437,9 +437,21 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–6 **done**. **57 tests passing**, and `domain/` still has **zero Django
-imports**. Phase 6 work is on `feat/phase-6-intervals`.
+**Where we are:** Phases 0–7 **done — the centrepiece is built.** **579 tests passing**
+(500 of them randomised oracle checks), and `domain/` still has **zero Django imports**.
+Phase 7 work is on `feat/phase-7-matching-engine`.
 Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+
+**The three matchers — all behind the same `Matcher` ABC, so they are interchangeable:**
+| Strategy | Complexity | Optimal? | Role |
+|---|---|---|---|
+| `GreedyMatcher` | O(n log n) | ❌ order-dependent | fast baseline, kept for comparison |
+| `OptimalMatcher` | O(k^n) | ✅ | **test oracle only** — never in production paths |
+| `HungarianMatcher` | O(n³) | ✅ | **the default** |
+
+Measured (`python manage.py benchmark_matchers`): at 8×25 greedy left **1 request unfilled**
+to save 47; Hungarian filled everything. At 15×60 and 30×150 both filled everything and
+Hungarian was *cheaper*. Full write-up in [`docs/matching.md`](docs/matching.md).
 
 **Stack now live:** PostgreSQL **17.10** (service `postgresql-x64-17`, db `benchflow`, port 5432) ·
 `psycopg[binary]` · `python-dotenv`. Secrets are in `.env` (gitignored): `DJANGO_SECRET_KEY` and
@@ -495,20 +507,20 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 7 — the matching engine ⭐⭐, the centrepiece.** The assignment
-problem, bipartite graphs, greedy vs optimal, the Hungarian algorithm, scoring functions. Benchmark
-greedy against optimal and write up the trade-off. This is the phase the whole project exists for.
-**Useful commands:** `python manage.py seed_demo` rebuilds demo data · admin at `/admin/`.
+**The immediate next step:** **Phase 8 — design patterns.** Strategy (already half-done via the
+`Matcher` ABC), Specification (composable requirement rules — `Request.is_satisfied_by` currently
+hard-codes its four rules), State (the request pipeline), Repository (already done in Phase 4),
+Observer, Factory. Each gets its own card and its own commit.
+**Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` · `/admin/`.
 
-⚠️ **Two pieces of wiring debt Phase 7 MUST clear** — both are built and tested but not yet used by
-the matcher, so they silently do nothing in the real flow:
-1. `SkillGraph.expand()` — implied skills (Django ⇒ Python). Call it before filtering candidates.
-2. `Specialist.is_free_for()` — the real fractional calendar. `Request.is_satisfied_by()` still uses
-   the crude `available_from >= starts_on` check and ignores allocations entirely.
+✅ **Both pieces of wiring debt are cleared.** `SkillGraph.expand()` runs inside `Matcher.resolved()`
+on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
+`Request.is_satisfied_by()`. Both are pinned by `tests/test_matcher_wiring.py`.
 **Checkpoint:** Phase 7 matcher done by ~6 Aug, or the scope conversation returns (deadline 13 Aug).
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 2 Aug 2026 | 7 | **Phase 7 done — the centrepiece.** Cleared both pieces of wiring debt (skill graph + calendar now run inside real matching, pinned by tests). Added multi-request `assign()` so requests compete for one pool. Then three matchers: `GreedyMatcher`, exhaustive `OptimalMatcher` (Mohammed typed `is_better` — the objective function), and `HungarianMatcher` (Mohammed typed `cell_cost` — the penalty encoding). Verified by **oracle testing**: 200 random worlds where Hungarian must match the exhaustive answer exactly, plus 300 more asserting invariants. Benchmarked across 7 world sizes; wrote up `docs/matching.md`. **579 tests** | **the assignment problem** · bipartite graphs · **locally vs globally optimal** (greedy strands a client to save 47) · order-dependence as a correctness smell · **objective functions** as business decisions · **the Hungarian algorithm** & potentials as generalised row/column reduction · **penalty encoding** to turn "fill first, then save" into pure arithmetic · integer cents for exactness · padding to square · **oracle testing** — how to trust an algorithm you did not derive · seeded randomised testing · O(n log n) vs O(k^n) vs O(n³) measured, not claimed | 4 commits |
 | 2 Aug 2026 | 6 | **Phase 6 done.** `domain/allocation.py` — `Allocation` (frozen, inclusive dates) + `Calendar`. `peak_load()` is a **sweep-line** Mohammed typed: each booking becomes `+fraction` at the start and `-fraction` the day *after* the end, sort, one pass tracking a running max. `Specialist` gained `allocations` + `is_free_for()`, so part-time people can take part-time work. DB: `AllocationModel` with two `CheckConstraint`s (`ends_on >= starts_on`, `0 < fraction <= 1`) enforced by PostgreSQL itself; admin shows a live **peak load** column — Carol was pushed to **125% OVER** by hand to watch it fire. 18 new tests | **intervals** · **inclusive vs exclusive ends** (the `+1 day` release, pinned by boundary tests one day apart) · **sweep-line** and why it beats pairwise O(n²) · **O(n log n)** — the sort dominates · **fractional capacity** · tuple sort order so a release precedes an acquire on the same day · DB `CheckConstraint` · `on_delete=SET_NULL` to preserve history | *(this batch)* |
 | 1 Aug 2026 | 5 | **Phase 5 done.** `domain/skill_graph.py` — `SkillGraph.implied_by()` is a **BFS transitive closure** (Mohammed typed the loop), `expand()` adds implied skills at the same level and keeps the highest on conflict. 9 tests including a deliberate **cycle test** (wrong guard = infinite hang, not a failure). DB side: `implies` self-M2M on `SkillModel` with `symmetrical=False`, `DjangoSkillGraphRepository` loads the whole DAG in one query, `seed_demo` seeds 7 implications. Proved live: Alice knows only Django, and covers *Programming* two hops away | **graphs** · **DAGs** & why cycles are fatal · **BFS** and why `popleft()` makes it breadth-first · **transitive closure** · the visited-set as cycle guard · **Big-O: O(V+E)** · `deque` vs `list.pop(0)` (O(1) vs O(n)) · self-referencing many-to-many · loading a whole graph vs walking it hop-by-hop | 2 commits |
 | 1 Aug 2026 | 4 | **Phase 4 done.** PostgreSQL 17 installed; secrets moved to `.env` via `python-dotenv` (`SECRET_KEY` debt from Phase 0 cleared). 5 ORM models in `infrastructure/` with FKs, unique constraints, indexes and two join tables; migrations applied; Django admin with inlines; `seed_demo` management command (6 specialists, 7 skills, 3 requests). Then the centrepiece: the **Repository** — port in `domain/`, Django adapter in `infrastructure/` — and `GreedyMatcher` matched real PostgreSQL data **without a single change** | **relational modelling** · PK/FK · `on_delete` CASCADE vs PROTECT · join tables (when M2M needs extra data) · unique constraints & indexes · **migrations** · **transactions & ACID** (`@transaction.atomic`) · **N+1 query problem** & `prefetch_related` · **Repository pattern** · **ports & adapters** · **Dependency Inversion** — the 5th SOLID principle, finally demonstrable · env vars for secrets | 2 commits |
