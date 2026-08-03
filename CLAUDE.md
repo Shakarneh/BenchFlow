@@ -437,9 +437,19 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–8 **done.** **612 tests passing** (500 of them randomised oracle
-checks), and `domain/` still has **zero Django imports**. Phase 8 work is on
-`feat/phase-8-design-patterns`. Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+**Where we are:** Phases 0–9 **done.** **621 tests passing**, and the dependency rule is now
+**machine-enforced**: `lint-imports` runs 3 contracts (domain = stdlib only · application = no
+Django · arrows point inward), proven by deliberately breaking one and watching it fail.
+`application/` now has real use cases (`ProposeCandidates`, `FillAllRequests`) tested with 4-line
+fake repositories — no database. `infrastructure/container.py` is the composition root (the ONE
+place that wires ports to Django adapters). ADRs in `docs/decisions.md`.
+Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
+
+**⚠️ Teaching mode v3 (3 Aug 2026, Mohammed's explicit request):** explanations were too dense —
+he was copy-pasting without understanding. New rules: max ~3 plain sentences before any command;
+one concept per step, concrete example before jargon; one plain sentence above every code block;
+keep the after-green verification questions (he values those); deep dives deferred to the Grand
+Walkthrough. Goal at this pace = the map, not every brick.
 
 **The five patterns in use — full write-up in [`docs/patterns.md`](docs/patterns.md):**
 | Pattern | Where | What it bought |
@@ -516,13 +526,11 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 9 — architecture.** The four folders already exist; this phase
-*formalises* them. Fill `application/` with use cases (`propose_candidates(request_id)`) that
-orchestrate repository + matcher + events, wire the real adapters at startup, add `import-linter`
-to enforce the dependency rule, write the first ADRs, and deliberately break one import to watch
-CI go red. Also clears the standing debt: **no tests for `infrastructure/` yet** — add one using a
-fake repository, which is exactly what the ports make possible.
-**Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` · `/admin/`.
+**The immediate next step:** **Phase 10 — Web & APIs.** DRF endpoints in `interfaces/` calling the
+use cases in `application/` (they exist and are tested — the API is a thin skin over them).
+Serializers, pagination, OpenAPI/Swagger. The matcher finally becomes visible to the outside world.
+**Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` ·
+`lint-imports` · `/admin/`.
 
 ✅ **Both pieces of wiring debt are cleared.** `SkillGraph.expand()` runs inside `Matcher.resolved()`
 on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
@@ -531,6 +539,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 3 Aug 2026 | 9 | **Phase 9 done.** `application/` filled: `ProposeCandidates` + `FillAllRequests` use cases, tested by 10 tests with 4-line fake repositories — zero database. `infrastructure/container.py` = composition root. `import-linter` with 3 contracts; **deliberately broke the rule** (`django` import inside `domain/skill.py`) → build failed naming file+line → removed it → green. 3 ADRs in `docs/decisions.md`. **Teaching mode v3 adopted** — plain words, one concept per step, map over bricks | **use cases / application layer** · **composition root** · **dependency injection** (things arrive as constructor arguments) · fakes vs mocks · machine-enforced architecture · **ADRs** · config error vs check failure (the `include_external_packages` lesson) | 3 commits |
 | 3 Aug 2026 | 8 | **Phase 8 done.** Two patterns were already in the code (Strategy, Repository) — named them rather than rebuilt them. Then three real builds: **Specification** (`Request.is_satisfied_by` refactored from one boolean into composable rule objects with `&` `\|` `~`, and `reasons_against()` that names every failure), **State** (`Pipeline` with an `ALLOWED` transition table, Mohammed typed the guard; frozen append-only history; `time_to_fill()` = the «3 дня» promise), **Observer** (`EventBus`, frozen past-tense events, pipeline announces without knowing who listens). Factory considered and **rejected** in writing. `docs/patterns.md` | **Specification** & why composable rules beat a compound boolean (explainability as a feature) · dunder operator overloading (`__and__`/`__or__`/`__invert__`) · **State machines** — rules as a data table, not branching code; illegal states unrepresentable · audit trails & frozen history · **Observer / domain events** · past-tense event naming · Open/Closed at system level · **when a pattern is overkill** — and writing the rejection down | 4 commits |
 | 2 Aug 2026 | 7 | **Phase 7 done — the centrepiece.** Cleared both pieces of wiring debt (skill graph + calendar now run inside real matching, pinned by tests). Added multi-request `assign()` so requests compete for one pool. Then three matchers: `GreedyMatcher`, exhaustive `OptimalMatcher` (Mohammed typed `is_better` — the objective function), and `HungarianMatcher` (Mohammed typed `cell_cost` — the penalty encoding). Verified by **oracle testing**: 200 random worlds where Hungarian must match the exhaustive answer exactly, plus 300 more asserting invariants. Benchmarked across 7 world sizes; wrote up `docs/matching.md`. **579 tests** | **the assignment problem** · bipartite graphs · **locally vs globally optimal** (greedy strands a client to save 47) · order-dependence as a correctness smell · **objective functions** as business decisions · **the Hungarian algorithm** & potentials as generalised row/column reduction · **penalty encoding** to turn "fill first, then save" into pure arithmetic · integer cents for exactness · padding to square · **oracle testing** — how to trust an algorithm you did not derive · seeded randomised testing · O(n log n) vs O(k^n) vs O(n³) measured, not claimed | 4 commits |
 | 2 Aug 2026 | 6 | **Phase 6 done.** `domain/allocation.py` — `Allocation` (frozen, inclusive dates) + `Calendar`. `peak_load()` is a **sweep-line** Mohammed typed: each booking becomes `+fraction` at the start and `-fraction` the day *after* the end, sort, one pass tracking a running max. `Specialist` gained `allocations` + `is_free_for()`, so part-time people can take part-time work. DB: `AllocationModel` with two `CheckConstraint`s (`ends_on >= starts_on`, `0 < fraction <= 1`) enforced by PostgreSQL itself; admin shows a live **peak load** column — Carol was pushed to **125% OVER** by hand to watch it fire. 18 new tests | **intervals** · **inclusive vs exclusive ends** (the `+1 day` release, pinned by boundary tests one day apart) · **sweep-line** and why it beats pairwise O(n²) · **O(n log n)** — the sort dominates · **fractional capacity** · tuple sort order so a release precedes an acquire on the same day · DB `CheckConstraint` · `on_delete=SET_NULL` to preserve history | *(this batch)* |

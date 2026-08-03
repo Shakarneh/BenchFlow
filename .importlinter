@@ -1,0 +1,55 @@
+# Machine-enforced architecture.
+#
+# Until now the dependency rule was a promise. This file makes it a build
+# failure. Run it with:  lint-imports
+#
+# CLAUDE.md section 5 describes the shape; this is that description turned
+# into something a computer checks on every push.
+
+[importlinter]
+root_packages =
+    domain
+    application
+    infrastructure
+    interfaces
+    config
+# Required because the contracts below forbid `django`, which lives outside
+# our own packages. Without this, import-linter refuses to run at all.
+include_external_packages = True
+
+[importlinter:contract:layers]
+name = The dependency rule: arrows point inward
+type = layers
+layers =
+    interfaces
+    application
+    domain
+containers =
+
+# Read the list top to bottom: a layer may import anything BELOW it, never
+# anything above. interfaces may use application; application may use domain;
+# domain may use neither. infrastructure is deliberately absent -- it sits to
+# the side and is covered by the forbidden contracts below.
+
+[importlinter:contract:domain-is-pure]
+name = domain/ imports nothing but the standard library
+type = forbidden
+source_modules =
+    domain
+forbidden_modules =
+    django
+    application
+    infrastructure
+    interfaces
+    config
+
+[importlinter:contract:application-knows-no-framework]
+name = application/ orchestrates without touching Django or the database
+type = forbidden
+source_modules =
+    application
+forbidden_modules =
+    django
+    infrastructure
+    interfaces
+    config
