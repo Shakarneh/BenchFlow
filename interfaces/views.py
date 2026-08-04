@@ -5,8 +5,11 @@ serializer, return. No business rules live here -- those are in domain/.
 """
 
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from interfaces.permissions import IsAccountManager
 
 from infrastructure.container import propose_candidates
 from infrastructure.models import RequestModel
@@ -41,6 +44,8 @@ class ProposeCandidates(APIView):
     is POST. The heavy lifting happens in application/ -- this view only
     translates the answer to JSON.
     """
+
+    permission_classes = [IsAuthenticated, IsAccountManager]
 
     def post(self, request, pk):
         row = get_object_or_404(RequestModel, pk=pk)

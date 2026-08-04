@@ -8,6 +8,7 @@ CI, future you) reproduces the exact same database in one command.
 from datetime import date
 from decimal import Decimal
 
+from django.contrib.auth.models import Group, User
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -90,6 +91,15 @@ class Command(BaseCommand):
         SpecialistModel.objects.all().delete()
         RequestModel.objects.all().delete()
         SkillModel.objects.all().delete()
+
+        # Demo roles and users. get_or_create: reseeding must not duplicate
+        # them or touch your superuser.
+        managers, _ = Group.objects.get_or_create(name="Account Managers")
+        recruiters, _ = Group.objects.get_or_create(name="Recruiters")
+        if not User.objects.filter(username="manager").exists():
+            User.objects.create_user("manager", password="demo1234").groups.add(managers)
+        if not User.objects.filter(username="recruiter").exists():
+            User.objects.create_user("recruiter", password="demo1234").groups.add(recruiters)
 
         skills = {name: SkillModel.objects.create(name=name) for name in SKILLS}
 
