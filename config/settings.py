@@ -51,6 +51,11 @@ INSTALLED_APPS = [
 # schema -- the machine-readable menu of the whole API.
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # The lock: every endpoint requires a logged-in user unless a view
+    # explicitly says otherwise. Deny by default, allow by exception.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 SPECTACULAR_SETTINGS = {

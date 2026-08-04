@@ -437,13 +437,14 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–10 **done.** **625 tests passing.** The matcher now answers over the
-web: `interfaces/` has DRF serializers, views and urls calling the `application/` use cases.
-Endpoints: `GET /api/specialists/` · `GET /api/requests/` · `POST /api/requests/<id>/propose/`
-(returns proposed + rejected-with-reasons + shortfall) · Swagger at `/api/docs/`.
-API tests run against a throwaway `test_benchflow` database via `pytest-django` (`pytest.ini`
-holds the settings pointer). Phase 10 work is on `feat/phase-10-api`.
-The dependency rule stays machine-enforced (`lint-imports`, 3 contracts).
+**Where we are:** Phases 0–11 **done.** **627 tests passing.** The API is locked: every endpoint
+requires login (`IsAuthenticated` as the default — deny by default, allow by exception), and
+`POST /requests/<id>/propose/` additionally requires the **Account Managers** group
+(`interfaces/permissions.py`). Demo logins from `seed_demo`: `manager` / `recruiter`, password
+`demo1234`. Login pages for the browsable API at `/api/auth/`. Swagger at `/api/docs/`.
+**JWT deliberately skipped** — session auth is enough for one Django app; JWT earns its keep when
+a separate frontend or mobile client appears (would slot into DRF auth classes without touching
+views). Phase 11 work is on `feat/phase-11-auth`.
 Local folder is still `C:\Users\Mohammed_PC\my_projects\bench`.
 
 **⚠️ Teaching mode v3 (3 Aug 2026, Mohammed's explicit request):** explanations were too dense —
@@ -527,10 +528,10 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 11 — Authentication & authorization.** Right now the API is
-open to anyone. AuthN (who are you) vs authZ (what may you do), roles (admin · account manager ·
-recruiter · specialist), locking the endpoints. Keep it simple: DRF session auth + permission
-classes first, JWT only if time allows.
+**The immediate next step:** **Phase 12 — Money & correctness.** The rate & margin engine:
+margin = bill rate − cost rate, per placement/client/period. `Decimal` discipline is already in
+place since Phase 1 — this phase adds the *engine* plus DB-level invariants and the
+`select_for_update` race-condition story.
 **Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` ·
 `lint-imports` · `/admin/` · `/api/docs/`.
 
@@ -541,6 +542,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 4 Aug 2026 | 11 | **Phase 11 done.** Locked the whole API with `IsAuthenticated` as the DRF default (deny by default). Proved the lock live: 403 in incognito, 4 tests went red, then taught the tests to log in (`force_authenticate` fixtures). AuthZ via Django Groups: `IsAccountManager` permission on the propose endpoint — recruiters browse, only managers act. Demo users in `seed_demo`. JWT skipped in writing. Learned `git stash drop` after a stash was left un-popped | **authN vs authZ** (same 403, two different failures — his gate answer nailed it) · deny-by-default · **sessions** & signed cookies (the SECRET_KEY story pays off) · DRF permission classes · Django Groups as roles · `force_authenticate` in tests · why breaking your own tests can be the proof the feature works | 3 commits |
 | 4 Aug 2026 | 10 | **Phase 10 done.** DRF installed; `interfaces/` filled: serializers translate domain objects → JSON, thin views call repositories/use cases, urls under `/api/`. The star: `POST /api/requests/<id>/propose/` returns the Hungarian matcher's answer with rejected-with-reasons over HTTP. Swagger via drf-spectacular at `/api/docs/`. 4 API tests with `pytest-django` (throwaway test db). Learned `git stash` for real mid-flow | **what an API is** (addresses returning data) · serializers · **HTTP status codes seen live**: 200 · 404 · **405** (GET vs POST — reading vs doing) · browsable API · **OpenAPI/Swagger** (schema = machine menu, docs = human page) · thin views (no business rules in the web layer) · `git stash` / `git restore --staged` | 5 commits |
 | 3 Aug 2026 | 9 | **Phase 9 done.** `application/` filled: `ProposeCandidates` + `FillAllRequests` use cases, tested by 10 tests with 4-line fake repositories — zero database. `infrastructure/container.py` = composition root. `import-linter` with 3 contracts; **deliberately broke the rule** (`django` import inside `domain/skill.py`) → build failed naming file+line → removed it → green. 3 ADRs in `docs/decisions.md`. **Teaching mode v3 adopted** — plain words, one concept per step, map over bricks | **use cases / application layer** · **composition root** · **dependency injection** (things arrive as constructor arguments) · fakes vs mocks · machine-enforced architecture · **ADRs** · config error vs check failure (the `include_external_packages` lesson) | 3 commits |
 | 3 Aug 2026 | 8 | **Phase 8 done.** Two patterns were already in the code (Strategy, Repository) — named them rather than rebuilt them. Then three real builds: **Specification** (`Request.is_satisfied_by` refactored from one boolean into composable rule objects with `&` `\|` `~`, and `reasons_against()` that names every failure), **State** (`Pipeline` with an `ALLOWED` transition table, Mohammed typed the guard; frozen append-only history; `time_to_fill()` = the «3 дня» promise), **Observer** (`EventBus`, frozen past-tense events, pipeline announces without knowing who listens). Factory considered and **rejected** in writing. `docs/patterns.md` | **Specification** & why composable rules beat a compound boolean (explainability as a feature) · dunder operator overloading (`__and__`/`__or__`/`__invert__`) · **State machines** — rules as a data table, not branching code; illegal states unrepresentable · audit trails & frozen history · **Observer / domain events** · past-tense event naming · Open/Closed at system level · **when a pattern is overkill** — and writing the rejection down | 4 commits |
