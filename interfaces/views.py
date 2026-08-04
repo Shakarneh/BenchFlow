@@ -1,0 +1,57 @@
+"""The web layer. Each view answers one URL.
+
+Views stay thin on purpose: load through the repositories, hand to a
+serializer, return. No business rules live here -- those are in domain/.
+"""
+
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from infrastructure.container import propose_candidates
+from infrastructure.models import RequestModel
+from infrastructure.repositories import (
+    DjangoRequestRepository,
+    DjangoSpecialistRepository,
+    request_to_domain,
+)
+from interfaces.serializers import RequestSerializer, SpecialistSerializer
+
+
+class SpecialistList(APIView):
+    """GET /api/specialists/ -- everyone in the pool, with their skills."""
+
+    def get(self, request):
+        people = DjangoSpecialistRepository().all()
+        return Response(SpecialistSerializer(people, many=True).data)
+
+
+class RequestList(APIView):
+    """GET /api/requests/ -- every open client request."""
+
+    def get(self, request):
+        requests = DjangoRequestRepository().all()
+        return Response(RequestSerializer(requests, many=True).data)
+
+
+class ProposeCandidates(APIView):
+    """POST /api/requests/<id>/propose/ -- run the matcher for one request.
+
+    POST, not GET: reading data is GET; asking the system to DO something
+    is POST. The heavy lifting happens in application/ -- this view only
+    translates the answer to JSON.
+    """
+
+    def post(self, request, pk):
+        row = get_object_or_404(RequestModel, pk=pk)
+        proposal = propose_candidates()(request_to_domain(row))
+        return Response({
+            "client_name": proposal.request.client_name,
+            "is_fully_staffed": proposal.is_fully_staffed,
+            "shortfall": proposal.shortfall,
+            "proposed": SpecialistSerializer(proposal.proposed, many=True).data,
+            "rejected": [
+                {"full_name": person.full_name, "reasons": reasons}
+                for person, reasons in proposal.rejected
+            ],
+        })
