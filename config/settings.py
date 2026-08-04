@@ -42,8 +42,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_spectacular',
     'infrastructure',
 ]
+
+# drf-spectacular reads the views and serializers and writes the OpenAPI
+# schema -- the machine-readable menu of the whole API.
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'benchFlow API',
+    'DESCRIPTION': 'Resourcing and allocation for IT service companies. '
+                   'The matcher solves the assignment problem (Hungarian algorithm).',
+    'VERSION': '0.1.0',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
