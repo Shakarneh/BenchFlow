@@ -23,8 +23,21 @@ from infrastructure.models import (
 
 @pytest.fixture
 def client():
-    """A fake browser that is already logged in as a test user."""
+    """Logged in, but in NO group -- can browse, cannot act."""
     user = User.objects.create_user("test_recruiter", password="irrelevant")
+    api = APIClient()
+    api.force_authenticate(user)
+    return api
+
+
+@pytest.fixture
+def manager_client():
+    """Logged in AND an account manager -- allowed to run the matcher."""
+    from django.contrib.auth.models import Group
+
+    user = User.objects.create_user("test_manager", password="irrelevant")
+    group, _ = Group.objects.get_or_create(name="Account Managers")
+    user.groups.add(group)
     api = APIClient()
     api.force_authenticate(user)
     return api
@@ -71,9 +84,17 @@ def test_specialist_list_returns_200_with_the_data(client):
 
 
 @pytest.mark.django_db
-def test_propose_returns_the_matchers_answer(client):
+def test_a_plain_user_cannot_run_the_matcher(client):
+    """Browsing is fine; proposing is a business action reserved for managers."""
     request = make_world()
     response = client.post(f"/api/requests/{request.pk}/propose/")
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_propose_returns_the_matchers_answer(manager_client):
+    request = make_world()
+    response = manager_client.post(f"/api/requests/{request.pk}/propose/")
     assert response.status_code == 200
     body = response.json()
     assert body["is_fully_staffed"] is True
@@ -81,14 +102,14 @@ def test_propose_returns_the_matchers_answer(client):
 
 
 @pytest.mark.django_db
-def test_proposing_for_a_missing_request_is_404(client):
-    response = client.post("/api/requests/99999/propose/")
+def test_proposing_for_a_missing_request_is_404(manager_client):
+    response = manager_client.post("/api/requests/99999/propose/")
     assert response.status_code == 404
 
 
 @pytest.mark.django_db
-def test_reading_the_propose_url_is_405(client):
+def test_reading_the_propose_url_is_405(manager_client):
     """GET on a do-something endpoint is refused, not silently accepted."""
     request = make_world()
-    response = client.get(f"/api/requests/{request.pk}/propose/")
+    response = manager_client.get(f"/api/requests/{request.pk}/propose/")
     assert response.status_code == 405
