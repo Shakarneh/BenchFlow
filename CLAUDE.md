@@ -257,7 +257,7 @@ anywhere**, and only later connect them to the database. Two reasons:
 > Each phase names the concepts it teaches. **Every ⭐ gets a Concept Card before any code.**
 > Phases are worked in order. Backend is finished before any frontend work begins.
 
-### PHASE 0 — Foundations & setup
+### PHASE 0 — Foundations & setup ✅ DONE
 **⭐ Concepts:** virtual environments · dependency management · project structure · `.gitignore` · Git branching model · README
 - Create the repo, virtualenv, install Django, first `runserver`
 - Install **pytest** here as a *tool* (one command, one example test) so Phase 1 can be tested at all.
@@ -266,7 +266,7 @@ anywhere**, and only later connect them to the database. Two reasons:
 - Agree conventions (naming, commit messages, branch names)
 - **Deliverable:** an empty Django project that runs, on GitHub, with a README
 
-### PHASE 1 — Object-Oriented Programming ⭐⭐ (the big one)
+### PHASE 1 — Object-Oriented Programming ⭐⭐ (the big one) ✅ DONE
 **⭐ Concepts:** classes & objects · **encapsulation · inheritance · polymorphism · abstraction** ·
 `@property` · `@classmethod` / `@staticmethod` · abstract base classes · **composition vs inheritance** ·
 dunder methods (`__str__`, `__eq__`, `__lt__`) · when OOP is the *wrong* tool ·
@@ -277,50 +277,50 @@ dunder methods (`__str__`, `__eq__`, `__lt__`) · when OOP is the *wrong* tool �
   *engine* (margin, rounding, DB constraints, race conditions), which genuinely needs a database.
 - **Deliverable:** `domain/` package, unit-tested with the pytest installed in Phase 0, no framework
 
-### PHASE 2 — Clean code & SOLID
+### PHASE 2 — Clean code & SOLID ✅ DONE
 **⭐ Concepts:** SOLID (all five, one at a time) · DRY · KISS · separation of concerns · naming ·
 small functions · code smells
 - Refactor Phase 1 with each principle, seeing what improves and why
 - **Deliverable:** the same behaviour, visibly better code
 
-### PHASE 3 — Testing *(the discipline, not the tool — the tool arrived in Phase 0)*
+### PHASE 3 — Testing ✅ DONE *(the discipline, not the tool — the tool arrived in Phase 0)*
 **⭐ Concepts:** unit vs integration vs e2e · fixtures · factories · **TDD** · what coverage
 really means · mocking (and why to avoid it)
 - Write tests *first* for the next domain rule
 - **Deliverable:** green suite, honest coverage report
 
-### PHASE 4 — Databases & persistence
+### PHASE 4 — Databases & persistence ✅ DONE
 **⭐ Concepts:** relational modelling · normalisation · PK/FK · indexes · **transactions & ACID** ·
 ORM trade-offs · migrations
 - Django models mirroring the domain; migrations; Django admin as a free UI
 - **Deliverable:** PostgreSQL schema with seeded demo data
 
-### PHASE 5 — Data structures: the skill graph
+### PHASE 5 — Data structures: the skill graph ✅ DONE
 **⭐ Concepts:** graphs · **DAGs** · BFS/DFS · transitive closure · adjacency list vs matrix ·
 hash maps · **Big-O notation**
 - Skill implication ("Django ⇒ Python") resolved via traversal
 - **Deliverable:** skill-resolution service + complexity analysis in the docs
 
-### PHASE 6 — Algorithms I: intervals & availability
+### PHASE 6 — Algorithms I: intervals & availability ✅ DONE
 **⭐ Concepts:** intervals · sorting · **sweep-line** · interval trees · priority queues (heaps) ·
 fractional capacity
 - The allocation calendar; over-allocation detection
 - **Deliverable:** availability engine + tests covering the nasty overlap cases
 
-### PHASE 7 — Algorithms II: the matching engine ⭐⭐ (the centrepiece)
+### PHASE 7 — Algorithms II: the matching engine ⭐⭐ (the centrepiece) ✅ DONE
 **⭐ Concepts:** the **assignment problem** · bipartite graphs · greedy vs optimal · the
 **Hungarian algorithm** · min-cost max-flow · scoring/objective functions · heuristics
 - Naive greedy matcher first (simple, understandable), then the optimal one — and *measure the difference*
 - **Deliverable:** matching service, benchmarked, with the trade-offs written up
 
-### PHASE 8 — Design patterns
+### PHASE 8 — Design patterns ✅ DONE
 **⭐ Concepts:** **Strategy** (swappable matchers) · **Specification** (composable requirement rules) ·
 **State** (the pipeline) · **Repository** (storage behind an interface) · **Observer / domain events** ·
 **Factory** · and *when patterns are overkill*
 - Each pattern gets its own card, its own commit, its own before/after
 - **Deliverable:** pipeline state machine + pluggable strategies
 
-### PHASE 9 — Software architecture
+### PHASE 9 — Software architecture ✅ DONE
 **⭐ Concepts:** layered architecture · **hexagonal / ports & adapters** · dependency inversion ·
 the dependency rule · **ADRs** (architecture decision records)
 - The four folders already exist from Phase 0 — this phase does **not** restructure them. It
@@ -329,63 +329,63 @@ the dependency rule · **ADRs** (architecture decision records)
   and watch it fail.
 - **Deliverable:** machine-enforced layering + first ADRs
 
-### PHASE 10 — Web & APIs
+### PHASE 10 — Web & APIs ✅ DONE
 **⭐ Concepts:** HTTP verbs & status codes · **REST** · the request lifecycle · serialization ·
 versioning · pagination · filtering · idempotency · OpenAPI
 - DRF endpoints over the application layer
 - **Deliverable:** documented API with interactive Swagger
 
-### PHASE 11 — Authentication & authorization
+### PHASE 11 — Authentication & authorization ✅ DONE
 **⭐ Concepts:** **authN vs authZ** · password hashing (bcrypt/argon2) · **sessions vs JWT** ·
 token refresh · **RBAC** · object-level permissions
 - Roles: admin · account manager · recruiter · specialist
 - **Deliverable:** secured API where each role sees only what it should
 
-### PHASE 12 — Money & correctness
+### PHASE 12 — Money & correctness ✅ DONE
 **⭐ Concepts:** **`Decimal` vs float** · currency · rounding · invariants · database constraints ·
 transaction isolation · race conditions · `select_for_update`
 - The rate & margin engine
 - **Deliverable:** financial calculations that are provably correct
 
-### PHASE 13 — Caching & async
+### PHASE 13 — Caching & async ✅ DONE
 **⭐ Concepts:** why caching · cache **invalidation** · TTL · Redis data types · task queues ·
 Celery workers & beat · idempotent tasks · sync vs async
 - Cache match results; recompute forecasts in the background; SLA breach alerts
 - **Deliverable:** Celery + Redis running under compose
 
-### PHASE 14 — Errors, logging & debugging
+### PHASE 14 — Errors, logging & debugging ✅ DONE
 **⭐ Concepts:** exception strategy · custom exception hierarchies · fail fast · **structured logging** ·
 log levels · reading stack traces · using a real debugger
 - **Deliverable:** consistent error handling and useful logs
 
-### PHASE 15 — Security fundamentals
+### PHASE 15 — Security fundamentals ✅ DONE
 **⭐ Concepts:** **OWASP Top 10** · SQL injection · XSS/CSRF · secrets management · env vars ·
 input validation · **personal-data handling** (their ФЗ-152 world)
 - **Deliverable:** a written security review of our own code
 
-### PHASE 16 — Tooling & typing
+### PHASE 16 — Tooling & typing ✅ DONE
 **⭐ Concepts:** linters · formatters · **static typing with mypy** · pre-commit hooks · dependency pinning
 - **Deliverable:** clean `ruff`, `black`, `mypy` runs
 
-### PHASE 17 — Docker
+### PHASE 17 — Docker ✅ DONE
 **⭐ Concepts:** containers vs VMs · images vs containers · Dockerfile · layers & caching ·
 **docker-compose** · volumes · networks · multi-stage builds
 - **Deliverable:** `docker compose up` brings up app + Postgres + Redis + worker
 
-### PHASE 18 — CI/CD
+### PHASE 18 — CI/CD ✅ DONE
 **⭐ Concepts:** what CI actually is · pipelines · **GitHub Actions** · matrix builds · quality gates · CD
 - **Deliverable:** every PR automatically runs tests, lint and type checks
 
-### PHASE 19 — Deployment
+### PHASE 19 — Deployment ✅ DONE
 **⭐ Concepts:** environments · **12-factor** config · migrations in production · zero-downtime ·
 health checks · monitoring
 - **Deliverable:** a live, public demo instance
 
-### PHASE 20 — Frontend *(only now)*
+### PHASE 20 — Frontend ✅ DONE *(only now)*
 **⭐ Concepts:** consuming a REST API · auth on the client · state · rendering the schedule
 - **Deliverable:** a UI good enough to demo the matcher visually
 
-### PHASE 21 — Documentation & showcase
+### PHASE 21 — Documentation & showcase 🔄 IN PROGRESS *(the only phase left)*
 - **The Grand Walkthrough (mode v2):** we read the ENTIRE codebase together, file by file, and I
   explain each one back — the final proof of understanding
 - Real README, architecture docs, the ADR set, diagrams — including a section on the AI-assisted,
@@ -437,25 +437,47 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–20 **done. 649 tests passing.** Phase 20 (frontend) is built and
-working locally on `feat/phase-20-frontend` — **not yet merged or deployed.**
+**Where we are:** Phases **0–20 are DONE and merged to `main`. 649 tests passing**, all five CI
+gates green. Phase 21 is the only phase left, and it is partly done — see the checklist below.
+
+**Branches (5 Aug 2026):** every feature branch has been deleted locally and on GitHub.
+Only `main` and `develop` remain. New work starts with `git switch -c feat/…` from `develop`.
 
 **The frontend, deliberately small:** ONE page, `interfaces/templates/dashboard.html`, served at
 `/` by a `TemplateView` (`interfaces/views.py::Dashboard`). Plain HTML + `fetch()` — no React, no
 npm, no build step. It lists open requests and a **Propose** button per request; pressing it POSTs
 to `/api/requests/<id>/propose/` and renders the proposed candidates, everyone else with their
-rejection reasons in red, and whether the answer was cached. `TEMPLATES["DIRS"]` in settings points
+rejection reasons, and whether the answer was cached. `TEMPLATES["DIRS"]` in settings points
 at `interfaces/templates`. CSRF token is read from the cookie and sent as `X-CSRFToken`.
 The frontend is a *client* of the API, not a special case inside it.
 
-**⏭️ NEXT SESSION STARTS HERE — Phase 21, the final phase:**
-1. Merge `feat/phase-20-frontend` → `develop` → `main` (Render auto-deploys; check `/` live)
-2. Rewrite `README.md` properly: what it is · the live URL · screenshots (Swagger, the dashboard,
-   the benchmark table) · architecture diagram · how to run (`docker compose up`) · the
-   AI-assisted spec-driven workflow section
-3. **The Grand Walkthrough** — read the ENTIRE codebase together, file by file, Mohammed explaining
-   each one back. This is Rule 4's final gate and the reason the 15 days existed. **Protect it.**
-4. LinkedIn post · portfolio entry on `mohammedshakarneh.com` · interview talking points
+**⏭️ PHASE 21 — what is done and what is left:**
+1. ✅ Merge the frontend → `develop` → `main`. Live and deployed.
+2. ✅ **Design pass** (5 Aug) — one warm design language across the dashboard AND the Django
+   admin. See the design note below.
+3. ⬜ **Rewrite `README.md` properly**: what it is · the live URL · screenshots (dashboard,
+   Swagger, the benchmark table) · architecture diagram · how to run (`docker compose up`) ·
+   the AI-assisted spec-driven workflow section. *(The README still carries a stale
+   "Phase 0 of 21" line — fixed to a correct status on 5 Aug, but the full rewrite is still owed.)*
+4. ⬜ **The Grand Walkthrough** — read the ENTIRE codebase together, file by file, Mohammed
+   explaining each one back. Rule 4's final gate and the reason the 15 days existed. **Protect it.**
+   Planned as 6 rounds, innermost layer first:
+   1 `domain/` entities · 2 `domain/` brains (matcher — own session) · 3 `application/` + the
+   port/adapter seam · 4 rest of `infrastructure/` · 5 `interfaces/` + `config/` · 6 `tests/` + ops.
+5. ⬜ LinkedIn post · portfolio entry on `mohammedshakarneh.com` · interview talking points
+
+**🎨 The design system (5 Aug 2026, `feat/phase-21-design`, merged).** Mohammed asked for a
+premium, timeless look and explicitly ruled out black and purple. Chosen: warm paper `#f3efe7`,
+ink `#1a1815`, one cognac accent `#8a5a34`, forest green for proposed and clay red for rejected.
+Fraunces (serif display) · Instrument Sans (UI) · IBM Plex Mono (rates and dates).
+- `static/css/benchflow.css` — the design system + dashboard components
+- `static/css/admin.css` — retheme of the Django admin by overriding its CSS variables
+- `interfaces/templates/admin/base_site.html` — extends `admin/base.html` (NOT `base_site.html`,
+  which would find itself and loop). Loads our CSS from `extrahead` so it wins over `login.css`.
+- `STATICFILES_DIRS` added to settings; model `verbose_name`s added so the admin says
+  "Skills · Specialists · Requests" instead of "Skill models" (migration `0006`, labels only).
+**Decision: NO npm, no React, no build step** — hand-written CSS, so Docker and CI stayed untouched.
+That refusal is itself an interview answer.
 
 **Earlier:** benchFlow is LIVE.
 🌍 **https://benchflow-qfzq.onrender.com** · docs `/api/docs/` · health `/api/health/` · `/admin/`
@@ -610,6 +632,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 5 Aug 2026 | 21 | **Phase 20 merged and live; design pass done.** Discovered the frontend had already been merged (PRs #45, #46) — the confusion was a stale LOCAL `main`, fixed with `git fetch`. Then a full visual redesign to Mohammed's brief (premium, timeless, no black, no purple): one hand-written CSS design system shared by the dashboard and the whole Django admin, warm paper + ink + cognac, three real typefaces, skeleton loaders and staggered card entrances. Admin retheme done by overriding Django's own CSS variables. Three real bugs found and fixed while verifying: `.stats{display:flex}` was beating the `hidden` attribute; module titles were painted with `--header-link-color` (paper-white on sand = invisible); custom SVG icons with no width/height stretched to fill two-line rows. Model `verbose_name`s added so the admin reads "Skills · Specialists · Requests". **Also caught a red `main`:** an earlier PR had been merged before CI finished, leaving `ensure_admin.py` unformatted — formatted, and all five gates verified green locally before merging this time | **CSS custom properties as a theming API** — retheming a whole app without touching its stylesheets · template inheritance traps (`extends "admin/base_site.html"` from a file of the same name = infinite loop) · **stylesheet order decides ties** at equal specificity, hence `extrahead` not `extrastyle` · the `hidden` attribute loses to any class that sets `display` · SVG with no intrinsic size scales to its box · **local `main` ≠ GitHub `main`** until you `git fetch` · `git switch` vs `git checkout` and why Git split them · browser caching during CSS work (DevTools → Disable cache) · **why you wait for the green tick before merging** | 3 commits · 1 PR |
 | 5 Aug 2026 | 20 | **Phase 20 done.** One page, `interfaces/templates/dashboard.html`, served at `/`. Plain HTML + `fetch()` against the existing API — no framework, no build step, deliberately. Lists open requests; **Propose** POSTs to the API and renders proposed candidates, rejected-with-reasons in red, and the cache flag. Seeing Elena rejected *only* on her calendar while everyone else fails on skills too is the Specification pattern paying off visually | **consuming a REST API from a browser** · `fetch()` · **CSRF tokens** and why a POST needs one · why the frontend is a CLIENT of the backend, not part of it · `TemplateView` · choosing NO framework as a deliberate engineering decision | 1 commit |
 | 5 Aug 2026 | 19 | **Phase 19 done — the project is public.** Made it production-ready: gunicorn instead of `runserver`, WhiteNoise for static files, `dj-database-url` so one `DATABASE_URL` works alongside the five local vars, `collectstatic` at image build time, and a `/api/health/` endpoint. `render.yaml` declares the whole environment in code — web + Postgres + Redis. Deployed via Render Blueprint; **first two deploys failed** and both failures were instructive: wrong hostname (Render appended a suffix) and the SSL redirect breaking the platform's internal health check. Free tier has no Shell, so demo data and the admin user are created at startup from env vars | **12-factor config** (one `DATABASE_URL`, env vars everywhere) · **infrastructure as code** — the environment defined in a reviewed file, not clicked into a dashboard · **health checks** & why a 301 is not "healthy" · **reverse proxies** and `SECURE_PROXY_SSL_HEADER` · dev server vs **WSGI server** · static files in production · **CD** — merging to `main` deploys automatically · reading a platform's failure message instead of guessing | 3 commits |
 | 5 Aug 2026 | 17→18 | **Two phases done.** **17 — Docker:** `Dockerfile` (dependency layer before source layer, so a code change does not reinstall everything), `.dockerignore` that keeps `.env` OUT of the image, and `docker-compose.yml` running web + db + redis + worker. Proved live: migrations ran, demo data seeded, the worker logged `Connected to redis://redis:6379/2` — found by service name over Docker's private network. **18 — CI:** GitHub Actions runs ruff, black, mypy, import-linter and pytest against real PostgreSQL and Redis services, plus a second job that builds the image. First run went **red** — `black --check` caught `manage.py`, which had been reformatted locally but left out of the Phase 16 commit. Fixed and green | **containers vs VMs** · **image vs container** · **layer caching** and why instruction order matters · service discovery by name (`POSTGRES_HOST=db`) · named **volumes** for data that must survive · **healthchecks** & `depends_on: condition: service_healthy` (started ≠ ready) · one image, many roles (web and worker) · **CI** — the gates run on a clean machine, so "works on my machine" cannot hide · a red build catching a real omission | 3 commits |
