@@ -4,9 +4,12 @@ Views stay thin on purpose: load through the repositories, hand to a
 serializer, return. No business rules live here -- those are in domain/.
 """
 
+import logging
+
 from django.core.cache import cache
+from django.db import connection
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -20,6 +23,30 @@ from infrastructure.repositories import (
 )
 from interfaces.permissions import IsAccountManager
 from interfaces.serializers import RequestSerializer, SpecialistSerializer
+
+logger = logging.getLogger(__name__)
+
+
+class HealthCheck(APIView):
+    """GET /api/health/ -- is this instance actually working?
+
+    Deliberately open (no login): the hosting platform pings this to decide
+    whether to keep the instance in service, and it has no credentials.
+
+    It checks the DATABASE too, not just "did Python start". An app that
+    answers 200 while its database is unreachable is worse than one that
+    admits it is down.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            connection.ensure_connection()
+        except Exception:
+            logger.exception("health check failed: database unreachable")
+            return Response({"status": "unhealthy", "database": "unreachable"}, status=503)
+        return Response({"status": "ok", "database": "ok"})
 
 
 class SpecialistList(APIView):
