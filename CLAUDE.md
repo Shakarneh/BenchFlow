@@ -437,7 +437,27 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–19 **done — benchFlow is LIVE.**
+**Where we are:** Phases 0–20 **done. 649 tests passing.** Phase 20 (frontend) is built and
+working locally on `feat/phase-20-frontend` — **not yet merged or deployed.**
+
+**The frontend, deliberately small:** ONE page, `interfaces/templates/dashboard.html`, served at
+`/` by a `TemplateView` (`interfaces/views.py::Dashboard`). Plain HTML + `fetch()` — no React, no
+npm, no build step. It lists open requests and a **Propose** button per request; pressing it POSTs
+to `/api/requests/<id>/propose/` and renders the proposed candidates, everyone else with their
+rejection reasons in red, and whether the answer was cached. `TEMPLATES["DIRS"]` in settings points
+at `interfaces/templates`. CSRF token is read from the cookie and sent as `X-CSRFToken`.
+The frontend is a *client* of the API, not a special case inside it.
+
+**⏭️ NEXT SESSION STARTS HERE — Phase 21, the final phase:**
+1. Merge `feat/phase-20-frontend` → `develop` → `main` (Render auto-deploys; check `/` live)
+2. Rewrite `README.md` properly: what it is · the live URL · screenshots (Swagger, the dashboard,
+   the benchmark table) · architecture diagram · how to run (`docker compose up`) · the
+   AI-assisted spec-driven workflow section
+3. **The Grand Walkthrough** — read the ENTIRE codebase together, file by file, Mohammed explaining
+   each one back. This is Rule 4's final gate and the reason the 15 days existed. **Protect it.**
+4. LinkedIn post · portfolio entry on `mohammedshakarneh.com` · interview talking points
+
+**Earlier:** benchFlow is LIVE.
 🌍 **https://benchflow-qfzq.onrender.com** · docs `/api/docs/` · health `/api/health/` · `/admin/`
 Hosted on **Render**, defined by `render.yaml` (infrastructure as code): web service (Docker) +
 managed PostgreSQL + managed Redis, all free tier, deployed from `main` automatically on every
@@ -577,12 +597,9 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 20 — frontend.** A UI that consumes the API and shows the
-matcher visually: the bench, open requests, and a "propose" button returning ranked candidates with
-rejection reasons. Keep it deliberately small — one page, plain HTML/JS served by Django or a tiny
-React app. Then **Phase 21: docs + the Grand Walkthrough.**
-⚠️ **~5 days left, 2 phases.** Protect the Grand Walkthrough — it is the part that turns
-"I built this" into "I understand this", and it is what the whole 15 days was for.
+**The immediate next step:** see the "⏭️ NEXT SESSION STARTS HERE" block above — Phase 21 only.
+⚠️ **~5 days left, 1 phase.** Ahead of schedule. Spend the surplus on the Grand Walkthrough, not
+on new features.
 **Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` ·
 `lint-imports` · `/admin/` · `/api/docs/`.
 
@@ -593,6 +610,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 5 Aug 2026 | 20 | **Phase 20 done.** One page, `interfaces/templates/dashboard.html`, served at `/`. Plain HTML + `fetch()` against the existing API — no framework, no build step, deliberately. Lists open requests; **Propose** POSTs to the API and renders proposed candidates, rejected-with-reasons in red, and the cache flag. Seeing Elena rejected *only* on her calendar while everyone else fails on skills too is the Specification pattern paying off visually | **consuming a REST API from a browser** · `fetch()` · **CSRF tokens** and why a POST needs one · why the frontend is a CLIENT of the backend, not part of it · `TemplateView` · choosing NO framework as a deliberate engineering decision | 1 commit |
 | 5 Aug 2026 | 19 | **Phase 19 done — the project is public.** Made it production-ready: gunicorn instead of `runserver`, WhiteNoise for static files, `dj-database-url` so one `DATABASE_URL` works alongside the five local vars, `collectstatic` at image build time, and a `/api/health/` endpoint. `render.yaml` declares the whole environment in code — web + Postgres + Redis. Deployed via Render Blueprint; **first two deploys failed** and both failures were instructive: wrong hostname (Render appended a suffix) and the SSL redirect breaking the platform's internal health check. Free tier has no Shell, so demo data and the admin user are created at startup from env vars | **12-factor config** (one `DATABASE_URL`, env vars everywhere) · **infrastructure as code** — the environment defined in a reviewed file, not clicked into a dashboard · **health checks** & why a 301 is not "healthy" · **reverse proxies** and `SECURE_PROXY_SSL_HEADER` · dev server vs **WSGI server** · static files in production · **CD** — merging to `main` deploys automatically · reading a platform's failure message instead of guessing | 3 commits |
 | 5 Aug 2026 | 17→18 | **Two phases done.** **17 — Docker:** `Dockerfile` (dependency layer before source layer, so a code change does not reinstall everything), `.dockerignore` that keeps `.env` OUT of the image, and `docker-compose.yml` running web + db + redis + worker. Proved live: migrations ran, demo data seeded, the worker logged `Connected to redis://redis:6379/2` — found by service name over Docker's private network. **18 — CI:** GitHub Actions runs ruff, black, mypy, import-linter and pytest against real PostgreSQL and Redis services, plus a second job that builds the image. First run went **red** — `black --check` caught `manage.py`, which had been reformatted locally but left out of the Phase 16 commit. Fixed and green | **containers vs VMs** · **image vs container** · **layer caching** and why instruction order matters · service discovery by name (`POSTGRES_HOST=db`) · named **volumes** for data that must survive · **healthchecks** & `depends_on: condition: service_healthy` (started ≠ ready) · one image, many roles (web and worker) · **CI** — the gates run on a clean machine, so "works on my machine" cannot hide · a red build catching a real omission | 3 commits |
 | 5 Aug 2026 | 14→16 | **Three phases done.** **14 — errors & logging:** one exception family in `domain/errors.py` (`BenchFlowError` → `DomainRuleViolated` → `OverAllocated`/`IllegalTransition`), a DRF exception handler mapping rule violations to **409 Conflict** instead of 500, and structured logging where a refused placement is WARNING and a crash logs a traceback. **15 — security:** `check --deploy` went 10 → 3 warnings; production hardening (SSL redirect, secure cookies, HSTS, nosniff, DENY framing) switches on automatically when `DEBUG=False`; `DEBUG` now defaults to **off** (fail-safe); SECRET_KEY regenerated properly; `docs/security.md` written — OWASP Top 10 + ФЗ-152. **16 — tooling:** ruff + black + mypy configured in `pyproject.toml`, then every finding fixed — including two real bugs: `timedelta` was never imported (annotation was a string so Python never checked it) and an `assert False` that `python -O` would silently delete | **exception hierarchies** & catching at the right level · error codes as *meaning* (409 vs 500) · **log levels as signals** · **fail-safe defaults** — the safe state must be the default, because people forget · **OWASP Top 10** applied to own code · secrets in env vars · **linters vs formatters vs type checkers** (three different jobs) · `TYPE_CHECKING` to break circular imports · why tools catch what tests cannot (tests never read annotations) | 4 commits |

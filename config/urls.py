@@ -18,7 +18,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from interfaces.views import Dashboard
+
 urlpatterns = [
+    # The dashboard lives at the root, so the deployed URL shows something
+    # useful instead of a 404.
+    path("", Dashboard.as_view(), name="dashboard"),
     path("admin/", admin.site.urls),
     path("api/", include("interfaces.urls")),
     # Login/logout pages for the browsable API (top-right corner).

@@ -171,7 +171,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # Where to look for HTML templates, before checking each app's own
+        # templates/ folder.
+        "DIRS": [BASE_DIR / "interfaces" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
