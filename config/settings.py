@@ -42,11 +42,22 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 # it blocks HTTP Host header attacks.
 ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h]
 
+# Render sets this automatically to the real hostname it assigned, which may
+# not be the one we guessed (it appends a suffix if the name is taken).
+# Trusting the platform's own value beats hard-coding a guess.
+RENDER_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+
 # ── Production hardening ──────────────────────────────────────────────────
 # All of these REQUIRE HTTPS, so they must stay off locally or nothing works.
 # Turning them on together with DEBUG=False is what `check --deploy` wants.
 if not DEBUG:
     SECURE_SSL_REDIRECT = True  # http:// -> https://, always
+    # ...except the health check. The hosting platform calls it internally
+    # over plain http, and a 301 redirect is not a "healthy" answer -- the
+    # platform would conclude the app is broken and refuse to start it.
+    SECURE_REDIRECT_EXEMPT = [r"^api/health/$"]
     SESSION_COOKIE_SECURE = True  # never send the login cookie over http
     CSRF_COOKIE_SECURE = True  # same for the CSRF token
     SECURE_HSTS_SECONDS = 31536000  # 1 year: browsers refuse http entirely
