@@ -1,0 +1,24 @@
+# Anything listed here is never copied into the image.
+# Same idea as .gitignore, different purpose: keep the image small and
+# never bake secrets into it.
+
+.venv/
+__pycache__/
+*.py[cod]
+
+# SECRETS: .env is passed in at RUN time, never built in. An image with a
+# password inside it leaks the moment the image is shared.
+.env
+.env.*
+
+.git/
+.gitignore
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+db.sqlite3
+*.log
+docs/

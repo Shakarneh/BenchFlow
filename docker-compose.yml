@@ -1,0 +1,86 @@
+# The whole system, in one command:  docker compose up
+#
+# Four containers on one private network. They find each other by SERVICE
+# NAME -- the web container reaches PostgreSQL at the hostname "db", not at
+# localhost, because each container has its own localhost.
+#
+# db and redis publish NO ports to your machine on purpose: they are only
+# needed by the other containers, and not publishing them avoids clashing
+# with the PostgreSQL and Redis you already run locally.
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: benchflow
+      POSTGRES_USER: benchflow
+      POSTGRES_PASSWORD: benchflow
+    volumes:
+      # Named volume: the database survives `docker compose down`.
+      # Without this, every restart would lose all data.
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # "Ready" means accepting queries, not merely started. web waits for THIS.
+      test: ["CMD-SHELL", "pg_isready -U benchflow"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: .
+    # Migrate first, then serve. Without the wait-for-healthy below, this
+    # would race the database and crash on a cold start.
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py seed_demo &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      DJANGO_SECRET_KEY: dev-only-key-not-for-production-abcdefghijklmnop
+      DJANGO_DEBUG: "true"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      POSTGRES_DB: benchflow
+      POSTGRES_USER: benchflow
+      POSTGRES_PASSWORD: benchflow
+      POSTGRES_HOST: db          # <- the service name, not localhost
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/1
+      CELERY_BROKER_URL: redis://redis:6379/2
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: .
+    # Same image as web, different command. That is the point of containers:
+    # one build, many roles.
+    command: celery -A config worker --loglevel=info
+    environment:
+      DJANGO_SECRET_KEY: dev-only-key-not-for-production-abcdefghijklmnop
+      DJANGO_DEBUG: "true"
+      POSTGRES_DB: benchflow
+      POSTGRES_USER: benchflow
+      POSTGRES_PASSWORD: benchflow
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/1
+      CELERY_BROKER_URL: redis://redis:6379/2
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
