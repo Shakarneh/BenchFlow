@@ -16,4 +16,8 @@ class IsAccountManager(BasePermission):
     message = "Only account managers can propose candidates."
 
     def has_permission(self, request, view):
+        # Superusers bypass role checks -- standard practice, and it keeps
+        # an admin from being locked out of their own system.
+        if request.user.is_superuser:
+            return True
         return request.user.groups.filter(name="Account Managers").exists()
