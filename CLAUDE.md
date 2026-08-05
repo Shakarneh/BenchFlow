@@ -437,7 +437,22 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–18 **done.** `docker compose up` starts the **whole system** — web +
+**Where we are:** Phases 0–19 **done — benchFlow is LIVE.**
+🌍 **https://benchflow-qfzq.onrender.com** · docs `/api/docs/` · health `/api/health/` · `/admin/`
+Hosted on **Render**, defined by `render.yaml` (infrastructure as code): web service (Docker) +
+managed PostgreSQL + managed Redis, all free tier, deployed from `main` automatically on every
+merge — that is the CD half of CI/CD. Production readiness: **gunicorn** (not runserver),
+**WhiteNoise** for static files, `DATABASE_URL` support via `dj-database-url`, `/api/health/`
+health check, and `RENDER_EXTERNAL_HOSTNAME` trusted for `ALLOWED_HOSTS`.
+
+⚠️ **Two live-deployment gotchas, both hit and fixed:** the assigned hostname had a random suffix
+(`benchflow-qfzq`, not `benchflow`) so `ALLOWED_HOSTS` rejected everything; and `SECURE_SSL_REDIRECT`
+turned the platform's internal http health check into a 301, so Render concluded the app was dead —
+fixed with `SECURE_REDIRECT_EXEMPT`. Free tier has **no Shell**, so the superuser and demo data are
+created at container startup from `DJANGO_SUPERUSER_*` env vars (password stored in Render, never
+in git). Free instances **sleep after 15 min** — first visit takes ~50s.
+
+**Earlier (still true):** `docker compose up` starts the **whole system** — web +
 postgres + redis + celery worker, four containers on a private network (they find each other by
 *service name*, e.g. `POSTGRES_HOST=db`). db and redis publish no ports, so nothing clashes with
 the local PostgreSQL/Redis. **GitHub Actions CI** runs on every push and PR: ruff · black --check ·
@@ -562,12 +577,12 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 19 — deployment.** A live public instance: 12-factor config
-(already mostly done — everything reads from env vars), migrations in production, health checks.
-Realistic hosts: Render / Railway / Fly.io free tiers, all of which can run the existing Dockerfile.
-Then 20 (frontend consuming the API) and 21 (docs + **Grand Walkthrough**).
-⚠️ **~6 days left, 3 phases.** Decision 10 stands: nothing is cut. Protect the Grand Walkthrough —
-it is the part that turns "I built this" into "I understand this".
+**The immediate next step:** **Phase 20 — frontend.** A UI that consumes the API and shows the
+matcher visually: the bench, open requests, and a "propose" button returning ranked candidates with
+rejection reasons. Keep it deliberately small — one page, plain HTML/JS served by Django or a tiny
+React app. Then **Phase 21: docs + the Grand Walkthrough.**
+⚠️ **~5 days left, 2 phases.** Protect the Grand Walkthrough — it is the part that turns
+"I built this" into "I understand this", and it is what the whole 15 days was for.
 **Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` ·
 `lint-imports` · `/admin/` · `/api/docs/`.
 
@@ -578,6 +593,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 5 Aug 2026 | 19 | **Phase 19 done — the project is public.** Made it production-ready: gunicorn instead of `runserver`, WhiteNoise for static files, `dj-database-url` so one `DATABASE_URL` works alongside the five local vars, `collectstatic` at image build time, and a `/api/health/` endpoint. `render.yaml` declares the whole environment in code — web + Postgres + Redis. Deployed via Render Blueprint; **first two deploys failed** and both failures were instructive: wrong hostname (Render appended a suffix) and the SSL redirect breaking the platform's internal health check. Free tier has no Shell, so demo data and the admin user are created at startup from env vars | **12-factor config** (one `DATABASE_URL`, env vars everywhere) · **infrastructure as code** — the environment defined in a reviewed file, not clicked into a dashboard · **health checks** & why a 301 is not "healthy" · **reverse proxies** and `SECURE_PROXY_SSL_HEADER` · dev server vs **WSGI server** · static files in production · **CD** — merging to `main` deploys automatically · reading a platform's failure message instead of guessing | 3 commits |
 | 5 Aug 2026 | 17→18 | **Two phases done.** **17 — Docker:** `Dockerfile` (dependency layer before source layer, so a code change does not reinstall everything), `.dockerignore` that keeps `.env` OUT of the image, and `docker-compose.yml` running web + db + redis + worker. Proved live: migrations ran, demo data seeded, the worker logged `Connected to redis://redis:6379/2` — found by service name over Docker's private network. **18 — CI:** GitHub Actions runs ruff, black, mypy, import-linter and pytest against real PostgreSQL and Redis services, plus a second job that builds the image. First run went **red** — `black --check` caught `manage.py`, which had been reformatted locally but left out of the Phase 16 commit. Fixed and green | **containers vs VMs** · **image vs container** · **layer caching** and why instruction order matters · service discovery by name (`POSTGRES_HOST=db`) · named **volumes** for data that must survive · **healthchecks** & `depends_on: condition: service_healthy` (started ≠ ready) · one image, many roles (web and worker) · **CI** — the gates run on a clean machine, so "works on my machine" cannot hide · a red build catching a real omission | 3 commits |
 | 5 Aug 2026 | 14→16 | **Three phases done.** **14 — errors & logging:** one exception family in `domain/errors.py` (`BenchFlowError` → `DomainRuleViolated` → `OverAllocated`/`IllegalTransition`), a DRF exception handler mapping rule violations to **409 Conflict** instead of 500, and structured logging where a refused placement is WARNING and a crash logs a traceback. **15 — security:** `check --deploy` went 10 → 3 warnings; production hardening (SSL redirect, secure cookies, HSTS, nosniff, DENY framing) switches on automatically when `DEBUG=False`; `DEBUG` now defaults to **off** (fail-safe); SECRET_KEY regenerated properly; `docs/security.md` written — OWASP Top 10 + ФЗ-152. **16 — tooling:** ruff + black + mypy configured in `pyproject.toml`, then every finding fixed — including two real bugs: `timedelta` was never imported (annotation was a string so Python never checked it) and an `assert False` that `python -O` would silently delete | **exception hierarchies** & catching at the right level · error codes as *meaning* (409 vs 500) · **log levels as signals** · **fail-safe defaults** — the safe state must be the default, because people forget · **OWASP Top 10** applied to own code · secrets in env vars · **linters vs formatters vs type checkers** (three different jobs) · `TYPE_CHECKING` to break circular imports · why tools catch what tests cannot (tests never read annotations) | 4 commits |
 | 5 Aug 2026 | 13 | **Phase 13 done.** Installed Docker Desktop (WSL2 first — needed admin + reboot) and ran **Redis as a container**, which doubles as the Phase 17 warm-up. Django cache → Redis via `django-redis`; the propose endpoint now returns a `"cached"` flag, proven live false→true in the browser. **Version-based cache invalidation**: every key carries a data version, and `post_save`/`post_delete` signals bump it, so one increment orphans every stale answer. Celery wired (`config/celery.py`), worker run with `--pool=solo`, and `fill_all_requests_task.delay()` executed in a separate process — visible in the worker log. 5 caching tests incl. one proving a too-expensive specialist is never served from cache | **containers** (a sealed Linux box; nothing installed into Windows) · WSL2 · **caching** & TTL · **cache invalidation** — the hard half, solved with a version key rather than hunting individual entries · **Django signals** so nobody can forget to invalidate · **task queues** & brokers · `.delay()` vs calling a function · **idempotent tasks** · why a web request must not do slow work | 2 commits |
