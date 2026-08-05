@@ -43,5 +43,5 @@ EXPOSE 8000
 CMD ["sh", "-c", "\
 python manage.py migrate --noinput && \
 (python manage.py seed_demo || true) && \
-(python manage.py createsuperuser --noinput || true) && \
+(python manage.py ensure_admin || true) && \
 gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
