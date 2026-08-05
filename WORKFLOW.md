@@ -75,43 +75,43 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    P0["PHASE 0<br/>Foundations & setup"] --> P1
+    P0["✅ PHASE 0<br/>Foundations & setup"] --> P1
 
     subgraph CORE["🧠 THE THINKING LAYER — pure Python, no framework"]
-        P1["PHASE 1 ⭐⭐<br/>Object-Oriented Programming"] --> P2["PHASE 2<br/>Clean code & SOLID"]
-        P2 --> P3["PHASE 3<br/>Testing & TDD"]
+        P1["✅ PHASE 1 ⭐⭐<br/>Object-Oriented Programming"] --> P2["✅ PHASE 2<br/>Clean code & SOLID"]
+        P2 --> P3["✅ PHASE 3<br/>Testing & TDD"]
     end
 
-    P3 --> P4["PHASE 4<br/>Databases & persistence"]
+    P3 --> P4["✅ PHASE 4<br/>Databases & persistence"]
 
     subgraph ALGO["⚙️ THE HARD PART — real computer science"]
-        P5["PHASE 5<br/>Data structures: skill graph"] --> P6["PHASE 6<br/>Algorithms I: intervals"]
-        P6 --> P7["PHASE 7 ⭐⭐<br/>Algorithms II: MATCHING ENGINE"]
+        P5["✅ PHASE 5<br/>Data structures: skill graph"] --> P6["✅ PHASE 6<br/>Algorithms I: intervals"]
+        P6 --> P7["✅ PHASE 7 ⭐⭐<br/>Algorithms II: MATCHING ENGINE"]
     end
 
     P4 --> P5
-    P7 --> P8["PHASE 8<br/>Design patterns"]
-    P8 --> P9["PHASE 9<br/>Software architecture"]
+    P7 --> P8["✅ PHASE 8<br/>Design patterns"]
+    P8 --> P9["✅ PHASE 9<br/>Software architecture"]
 
     subgraph WEB["🌐 THE OUTSIDE WORLD"]
-        P10["PHASE 10<br/>Web & REST APIs"] --> P11["PHASE 11<br/>Auth & RBAC"]
-        P11 --> P12["PHASE 12<br/>Money & correctness"]
-        P12 --> P13["PHASE 13<br/>Caching & async"]
+        P10["✅ PHASE 10<br/>Web & REST APIs"] --> P11["✅ PHASE 11<br/>Auth & RBAC"]
+        P11 --> P12["✅ PHASE 12<br/>Money & correctness"]
+        P12 --> P13["✅ PHASE 13<br/>Caching & async"]
     end
 
     P9 --> P10
-    P13 --> P14["PHASE 14<br/>Errors & logging"]
-    P14 --> P15["PHASE 15<br/>Security"]
-    P15 --> P16["PHASE 16<br/>Tooling & typing"]
+    P13 --> P14["✅ PHASE 14<br/>Errors & logging"]
+    P14 --> P15["✅ PHASE 15<br/>Security"]
+    P15 --> P16["✅ PHASE 16<br/>Tooling & typing"]
 
     subgraph OPS["🚢 SHIPPING IT"]
-        P17["PHASE 17<br/>Docker"] --> P18["PHASE 18<br/>CI/CD"]
-        P18 --> P19["PHASE 19<br/>Deployment"]
+        P17["✅ PHASE 17<br/>Docker"] --> P18["✅ PHASE 18<br/>CI/CD"]
+        P18 --> P19["✅ PHASE 19<br/>Deployment"]
     end
 
     P16 --> P17
-    P19 --> P20["PHASE 20<br/>Frontend — only now"]
-    P20 --> P21["PHASE 21<br/>Docs & showcase"]
+    P19 --> P20["✅ PHASE 20<br/>Frontend — only now"]
+    P20 --> P21["🔄 PHASE 21<br/>Docs & showcase<br/><i>in progress</i>"]
     P21 --> DONE(["🎯 Apply to<br/>Expert Choice CIS"])
 
     style CORE fill:#1a237e,stroke:#5c6bc0,color:#fff

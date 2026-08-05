@@ -10,8 +10,14 @@ money every day.
 benchFlow is the engine behind that decision. At its centre is a real optimisation problem — the
 **assignment problem** — not a set of CRUD forms.
 
-> 🚧 **Status: in active development.** Phase 0 of 21 complete. See [`CLAUDE.md`](CLAUDE.md) for the
-> full plan and progress log.
+> ✅ **Status: live.** Phases 0–20 of 21 complete · **649 tests passing** · CI green.
+> Phase 21 (documentation & showcase) is in progress.
+>
+> 🌍 **[benchflow-qfzq.onrender.com](https://benchflow-qfzq.onrender.com)** — dashboard `/` ·
+> API docs `/api/docs/` · admin `/admin/`
+> *(free tier: the first visit takes ~50s while the instance wakes up)*
+>
+> See [`CLAUDE.md`](CLAUDE.md) for the full plan and progress log.
 
 ---
 
