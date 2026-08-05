@@ -45,8 +45,7 @@ ALLOWED: dict[RequestState, set[RequestState]] = {
 SLA_STARTS_AT = RequestState.SOURCING
 
 
-class IllegalTransition(Exception):
-    """Raised when a move is not permitted from the current state."""
+from domain.errors import IllegalTransition  # noqa: E402  (re-exported for callers)
 
 
 @dataclass(frozen=True)

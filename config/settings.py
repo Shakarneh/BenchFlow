@@ -56,6 +56,36 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'EXCEPTION_HANDLER': 'interfaces.exception_handler.benchflow_exception_handler',
+}
+
+# ── Logging ───────────────────────────────────────────────────────────────
+# Every line carries time, level, and WHICH module spoke. Without the module
+# name a log file is just noise you cannot search.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "{asctime} {levelname:<8} {name:<32} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+    },
+    "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        # Our own code speaks at INFO; everything else stays quiet unless
+        # something is wrong.
+        "domain": {"level": "INFO", "propagate": True},
+        "application": {"level": "INFO", "propagate": True},
+        "infrastructure": {"level": "INFO", "propagate": True},
+        "interfaces": {"level": "INFO", "propagate": True},
+    },
 }
 
 # ── Cache: Redis ──────────────────────────────────────────────────────────
