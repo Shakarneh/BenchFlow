@@ -3,9 +3,10 @@
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from interfaces.views import ProposeCandidates, RequestList, SpecialistList
+from interfaces.views import HealthCheck, ProposeCandidates, RequestList, SpecialistList
 
 urlpatterns = [
+    path("health/", HealthCheck.as_view()),
     path("specialists/", SpecialistList.as_view()),
     path("requests/", RequestList.as_view()),
     path("requests/<int:pk>/propose/", ProposeCandidates.as_view()),
