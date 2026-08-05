@@ -1,0 +1,88 @@
+# Continuous Integration: run every quality gate on every push and PR.
+#
+# The same four checks you run by hand -- ruff, black, mypy, pytest -- plus
+# import-linter guarding the architecture. GitHub runs them on a fresh Linux
+# machine, so "works on my machine" cannot hide a broken build.
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Real PostgreSQL and Redis, started by GitHub alongside the job.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: benchflow
+          POSTGRES_USER: benchflow
+          POSTGRES_PASSWORD: benchflow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U benchflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DJANGO_SECRET_KEY: ci-only-key-not-a-real-secret-abcdefghijklmnopqrs
+      DJANGO_DEBUG: "true"
+      POSTGRES_DB: benchflow
+      POSTGRES_USER: benchflow
+      POSTGRES_PASSWORD: benchflow
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://localhost:6379/1
+      CELERY_BROKER_URL: redis://localhost:6379/2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Each check is its own step so a failure names itself in the UI
+      # instead of hiding inside one big "run everything" block.
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Format check (black)
+        run: black --check .
+
+      - name: Types (mypy)
+        run: mypy domain application
+
+      - name: Architecture (import-linter)
+        run: lint-imports
+
+      - name: Tests (pytest)
+        run: pytest -q
+
+  docker:
+    # Proves the image still builds -- a broken Dockerfile should fail here,
+    # not when someone tries to run the project.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t benchflow:ci .
