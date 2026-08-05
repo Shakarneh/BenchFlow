@@ -16,6 +16,15 @@ services:
         generateValue: true # Render generates and stores it; it never touches git
       - key: DJANGO_DEBUG
         value: "false"
+      # Django's createsuperuser --noinput reads these three. sync: false
+      # means "ask me for the value in the dashboard" -- the password is
+      # typed into Render, never written in this file or in git.
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@example.com
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
       # The real hostname arrives via RENDER_EXTERNAL_HOSTNAME, which Render
       # sets itself. This is only a fallback for local/other environments.
       - key: DJANGO_ALLOWED_HOSTS
