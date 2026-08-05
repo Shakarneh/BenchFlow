@@ -21,7 +21,7 @@ class Specialist:
     skills: list[SkillLevel]
     allocations: list[Allocation] = field(default_factory=list)
 
-    def covers(self, required):
+    def covers(self, required: SkillLevel) -> bool:
         """Do ANY of my skills satisfy this one requirement?"""
         return any(skill_level.covers(required) for skill_level in self.skills)
 

@@ -65,9 +65,7 @@ class SpecialistSkillModel(models.Model):
     needs its own table rather than a plain ManyToManyField.
     """
 
-    specialist = models.ForeignKey(
-        SpecialistModel, on_delete=models.CASCADE, related_name="skills"
-    )
+    specialist = models.ForeignKey(SpecialistModel, on_delete=models.CASCADE, related_name="skills")
     skill = models.ForeignKey(SkillModel, on_delete=models.PROTECT)
     level = models.PositiveSmallIntegerField(choices=LEVEL_CHOICES)
 
@@ -167,9 +165,7 @@ class PlacementModel(models.Model):
     specialist = models.ForeignKey(
         SpecialistModel, on_delete=models.PROTECT, related_name="placements"
     )
-    request = models.ForeignKey(
-        RequestModel, on_delete=models.PROTECT, related_name="placements"
-    )
+    request = models.ForeignKey(RequestModel, on_delete=models.PROTECT, related_name="placements")
     allocation = models.OneToOneField(
         "AllocationModel", on_delete=models.CASCADE, related_name="placement"
     )
@@ -194,9 +190,7 @@ class PlacementModel(models.Model):
 class RequestRequirementModel(models.Model):
     """One skill required by one request, at a minimum level."""
 
-    request = models.ForeignKey(
-        RequestModel, on_delete=models.CASCADE, related_name="requirements"
-    )
+    request = models.ForeignKey(RequestModel, on_delete=models.CASCADE, related_name="requirements")
     skill = models.ForeignKey(SkillModel, on_delete=models.PROTECT)
     level = models.PositiveSmallIntegerField(choices=LEVEL_CHOICES)
 

@@ -8,72 +8,138 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='RequestModel',
+            name="RequestModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('client_name', models.CharField(max_length=200)),
-                ('headcount', models.PositiveIntegerField()),
-                ('starts_on', models.DateField(db_index=True)),
-                ('max_bill_rate', models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("client_name", models.CharField(max_length=200)),
+                ("headcount", models.PositiveIntegerField()),
+                ("starts_on", models.DateField(db_index=True)),
+                ("max_bill_rate", models.DecimalField(decimal_places=2, max_digits=10)),
             ],
             options={
-                'db_table': 'request',
-                'ordering': ['starts_on'],
+                "db_table": "request",
+                "ordering": ["starts_on"],
             },
         ),
         migrations.CreateModel(
-            name='SkillModel',
+            name="SkillModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
             ],
             options={
-                'db_table': 'skill',
-                'ordering': ['name'],
+                "db_table": "skill",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='SpecialistModel',
+            name="SpecialistModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('full_name', models.CharField(max_length=200)),
-                ('cost_rate', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('available_from', models.DateField(db_index=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("full_name", models.CharField(max_length=200)),
+                ("cost_rate", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("available_from", models.DateField(db_index=True)),
             ],
             options={
-                'db_table': 'specialist',
-                'ordering': ['full_name'],
+                "db_table": "specialist",
+                "ordering": ["full_name"],
             },
         ),
         migrations.CreateModel(
-            name='RequestRequirementModel',
+            name="RequestRequirementModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('level', models.PositiveSmallIntegerField(choices=[(1, 'Junior'), (2, 'Middle'), (3, 'Senior')])),
-                ('request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='requirements', to='infrastructure.requestmodel')),
-                ('skill', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='infrastructure.skillmodel')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "level",
+                    models.PositiveSmallIntegerField(
+                        choices=[(1, "Junior"), (2, "Middle"), (3, "Senior")]
+                    ),
+                ),
+                (
+                    "request",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="requirements",
+                        to="infrastructure.requestmodel",
+                    ),
+                ),
+                (
+                    "skill",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="infrastructure.skillmodel"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'request_requirement',
-                'constraints': [models.UniqueConstraint(fields=('request', 'skill'), name='one_level_per_skill_per_request')],
+                "db_table": "request_requirement",
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("request", "skill"), name="one_level_per_skill_per_request"
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='SpecialistSkillModel',
+            name="SpecialistSkillModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('level', models.PositiveSmallIntegerField(choices=[(1, 'Junior'), (2, 'Middle'), (3, 'Senior')])),
-                ('skill', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='infrastructure.skillmodel')),
-                ('specialist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='skills', to='infrastructure.specialistmodel')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "level",
+                    models.PositiveSmallIntegerField(
+                        choices=[(1, "Junior"), (2, "Middle"), (3, "Senior")]
+                    ),
+                ),
+                (
+                    "skill",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="infrastructure.skillmodel"
+                    ),
+                ),
+                (
+                    "specialist",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="skills",
+                        to="infrastructure.specialistmodel",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'specialist_skill',
-                'constraints': [models.UniqueConstraint(fields=('specialist', 'skill'), name='one_level_per_skill_per_specialist')],
+                "db_table": "specialist_skill",
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("specialist", "skill"), name="one_level_per_skill_per_specialist"
+                    )
+                ],
             },
         ),
     ]

@@ -173,5 +173,5 @@ def test_the_matcher_strategy_is_swappable_from_outside(make_request, make_speci
     greedy = FillAllRequests(specialists, requests, FakeSkillGraph(), matcher_class=GreedyMatcher)()
     hungarian = FillAllRequests(specialists, requests, FakeSkillGraph())()
 
-    assert sum(p.shortfall for p in greedy) == 1      # greedy strands one
-    assert sum(p.shortfall for p in hungarian) == 0   # hungarian does not
+    assert sum(p.shortfall for p in greedy) == 1  # greedy strands one
+    assert sum(p.shortfall for p in hungarian) == 0  # hungarian does not

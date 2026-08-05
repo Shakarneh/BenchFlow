@@ -17,7 +17,6 @@ from domain.pipeline import Pipeline, RequestState
 from infrastructure.models import RequestModel, SpecialistModel
 from infrastructure.placements import place
 
-
 # ── The family tree ───────────────────────────────────────────────────────
 
 

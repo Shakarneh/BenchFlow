@@ -28,7 +28,6 @@ from infrastructure.models import (
     SpecialistModel,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -49,10 +48,12 @@ def place(specialist_id: int, request_id: int, bill_rate: Decimal) -> PlacementM
 
     # Now that the row is locked, this reading of the calendar is trustworthy:
     # nobody else can write bookings for this person until we commit.
-    calendar = Calendar([
-        Allocation(booking.starts_on, booking.ends_on, booking.fraction)
-        for booking in specialist.allocations.all()
-    ])
+    calendar = Calendar(
+        [
+            Allocation(booking.starts_on, booking.ends_on, booking.fraction)
+            for booking in specialist.allocations.all()
+        ]
+    )
     wanted = Allocation(request.starts_on, request.ends_on, request.fraction)
 
     if not calendar.can_take(wanted):
@@ -60,8 +61,10 @@ def place(specialist_id: int, request_id: int, bill_rate: Decimal) -> PlacementM
         # breaking. Log levels are a signal to whoever reads the logs.
         logger.warning(
             "placement refused: specialist=%s request=%s peak=%s wanted=%s",
-            specialist.full_name, request.client_name,
-            calendar.peak_load(), request.fraction,
+            specialist.full_name,
+            request.client_name,
+            calendar.peak_load(),
+            request.fraction,
         )
         raise OverAllocated(
             f"{specialist.full_name} cannot take {request.fraction:.0%} "
@@ -85,6 +88,9 @@ def place(specialist_id: int, request_id: int, bill_rate: Decimal) -> PlacementM
     )
     logger.info(
         "placement created: specialist=%s request=%s cost=%s bill=%s",
-        specialist.full_name, request.client_name, placement.cost_rate, placement.bill_rate,
+        specialist.full_name,
+        request.client_name,
+        placement.cost_rate,
+        placement.bill_rate,
     )
     return placement

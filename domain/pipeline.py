@@ -7,8 +7,18 @@ answer -- which matters when the clients are regulated banks.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import TYPE_CHECKING
+
+from domain.errors import IllegalTransition
+
+if TYPE_CHECKING:
+    # events.py imports THIS file, so importing it back at runtime would be a
+    # circular import. TYPE_CHECKING is False when Python runs and True when
+    # a type checker reads the code -- so the name exists for tools, and
+    # never executes. The annotation stays a string for the same reason.
+    from domain.events import EventBus
 
 
 class RequestState(Enum):
@@ -45,9 +55,6 @@ ALLOWED: dict[RequestState, set[RequestState]] = {
 SLA_STARTS_AT = RequestState.SOURCING
 
 
-from domain.errors import IllegalTransition  # noqa: E402  (re-exported for callers)
-
-
 @dataclass(frozen=True)
 class Transition:
     """One recorded move. Frozen: history must never be rewritten."""
@@ -74,7 +81,7 @@ class Pipeline:
     def can_move_to(self, target: RequestState) -> bool:
         """Is this move permitted from where we are now?"""
         return target in ALLOWED[self.state]
-    
+
     def move_to(self, target: RequestState, by: str = "system", at: datetime | None = None):
         """Move, or refuse loudly. Never silently ignore an illegal move."""
         if not self.can_move_to(target):
@@ -94,9 +101,7 @@ class Pipeline:
 
         from domain.events import RequestPlaced, RequestStateChanged, SourcingStarted
 
-        self.events.publish(
-            RequestStateChanged(moment, self.client_name, previous, target, by)
-        )
+        self.events.publish(RequestStateChanged(moment, self.client_name, previous, target, by))
         if target is SLA_STARTS_AT:
             self.events.publish(SourcingStarted(moment, self.client_name))
         if target is RequestState.PLACED:
@@ -121,7 +126,7 @@ class Pipeline:
                 return transition.at
         return None
 
-    def time_to_fill(self) -> "timedelta | None":
+    def time_to_fill(self) -> timedelta | None:
         """How long from starting to source until the specialist was placed.
 
         None if either end has not happened yet. This is the number Expert

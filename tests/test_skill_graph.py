@@ -58,9 +58,7 @@ def test_expand_adds_implied_skills_at_the_same_level():
 def test_expand_keeps_the_highest_level_when_a_skill_appears_twice():
     """Django-Senior implies Python-Senior; a declared Python-Junior must not win."""
     graph = SkillGraph({DJANGO: {PYTHON}})
-    expanded = graph.expand(
-        [SkillLevel(DJANGO, Level.SENIOR), SkillLevel(PYTHON, Level.JUNIOR)]
-    )
+    expanded = graph.expand([SkillLevel(DJANGO, Level.SENIOR), SkillLevel(PYTHON, Level.JUNIOR)])
     assert SkillLevel(PYTHON, Level.SENIOR) in expanded
     assert SkillLevel(PYTHON, Level.JUNIOR) not in expanded
 

@@ -3,6 +3,7 @@ from dataclasses import replace
 from decimal import Decimal
 
 from domain.skill_graph import SkillGraph
+from domain.specialist import Specialist
 
 PENALTY = 10**9
 
@@ -59,9 +60,7 @@ class Matcher(ABC):
     @staticmethod
     def total_cost(results):
         """Total cost rate of everyone assigned."""
-        return sum(
-            (s.cost_rate for _, chosen in results for s in chosen), Decimal("0.00")
-        )
+        return sum((s.cost_rate for _, chosen in results for s in chosen), Decimal("0.00"))
 
 
 class OptimalMatcher(Matcher):
@@ -93,8 +92,11 @@ class OptimalMatcher(Matcher):
 
     def assign(self, requests, specialists):
         # One slot per head required: headcount=2 means two slots to fill.
-        slots = [(index, request) for index, request in enumerate(requests)
-                 for _ in range(request.headcount)]
+        slots = [
+            (index, request)
+            for index, request in enumerate(requests)
+            for _ in range(request.headcount)
+        ]
         resolved = [self.resolved(s) for s in specialists]
 
         # Precompute eligibility once -- otherwise we re-check it thousands
@@ -104,12 +106,24 @@ class OptimalMatcher(Matcher):
             for _, request in slots
         ]
 
-        best = {"filled": -1, "cost": Decimal("0.00"), "picks": []}
+        # Separate typed variables rather than one dict: a dict of mixed value
+        # types is opaque to a type checker, and `nonlocal` says plainly that
+        # the inner function reassigns them.
+        best_filled: int = -1
+        best_cost: Decimal = Decimal("0.00")
+        best_picks: list[int | None] = []
 
-        def search(slot_index, used, picks, filled, cost):
+        def search(
+            slot_index: int,
+            used: set[int],
+            picks: list[int | None],
+            filled: int,
+            cost: Decimal,
+        ) -> None:
+            nonlocal best_filled, best_cost, best_picks
             if slot_index == len(slots):
-                if self.is_better(filled, cost, best["filled"], best["cost"]):
-                    best.update(filled=filled, cost=cost, picks=list(picks))
+                if self.is_better(filled, cost, best_filled, best_cost):
+                    best_filled, best_cost, best_picks = filled, cost, list(picks)
                 return
 
             # Option 1: assign someone eligible and not yet used.
@@ -131,11 +145,15 @@ class OptimalMatcher(Matcher):
         search(0, set(), [], 0, Decimal("0.00"))
 
         # Regroup the flat slot picks back into one list per request.
-        chosen_per_request = [[] for _ in requests]
-        for (request_index, _), pick in zip(slots, best["picks"]):
+        chosen_per_request: list[list[Specialist]] = [[] for _ in requests]
+        # strict=False on purpose: if the search found nothing, picks is
+        # shorter than slots and the remaining slots stay unfilled.
+        for (request_index, _), pick in zip(slots, best_picks, strict=False):
             if pick is not None:
                 chosen_per_request[request_index].append(specialists[pick])
-        return list(zip(requests, chosen_per_request))
+        # strict=True: these two must be the same length. If they ever are
+        # not, that is a bug and should crash rather than silently truncate.
+        return list(zip(requests, chosen_per_request, strict=True))
 
 
 class HungarianMatcher(Matcher):
@@ -159,16 +177,19 @@ class HungarianMatcher(Matcher):
         Costs are integer cents so the maths stays exact.
         """
         if slot_index >= len(slots):
-            return 0                                    # dummy slot: specialist unused, free
+            return 0  # dummy slot: specialist unused, free
         if spec_index >= len(specialists):
-            return PENALTY                              # dummy specialist: slot unfilled
+            return PENALTY  # dummy specialist: slot unfilled
         if not fits[slot_index][spec_index]:
-            return PENALTY                              # not qualified
+            return PENALTY  # not qualified
         return int(specialists[spec_index].cost_rate * 100)
-    
+
     def assign(self, requests, specialists):
-        slots = [(index, request) for index, request in enumerate(requests)
-                 for _ in range(request.headcount)]
+        slots = [
+            (index, request)
+            for index, request in enumerate(requests)
+            for _ in range(request.headcount)
+        ]
         if not slots or not specialists:
             return [(request, []) for request in requests]
 
@@ -187,7 +208,7 @@ class HungarianMatcher(Matcher):
 
         assignment = _solve(cost)
 
-        chosen_per_request = [[] for _ in requests]
+        chosen_per_request: list[list[Specialist]] = [[] for _ in requests]
         for slot_index, (request_index, _) in enumerate(slots):
             spec_index = assignment[slot_index]
             # A real specialist, actually qualified -- not a dummy or a penalty.
@@ -197,7 +218,9 @@ class HungarianMatcher(Matcher):
         # Cheapest first, so the output reads like the other matchers'.
         for chosen in chosen_per_request:
             chosen.sort(key=lambda s: s.cost_rate)
-        return list(zip(requests, chosen_per_request))
+        # strict=True: these two must be the same length. If they ever are
+        # not, that is a bug and should crash rather than silently truncate.
+        return list(zip(requests, chosen_per_request, strict=True))
 
 
 def _solve(cost: list[list[int]]) -> list[int]:
@@ -214,10 +237,11 @@ def _solve(cost: list[list[int]]) -> list[int]:
     """
     n = len(cost)
     INF = float("inf")
-    u = [0] * (n + 1)      # row potentials
-    v = [0] * (n + 1)      # column potentials
-    p = [0] * (n + 1)      # p[col] = row currently matched to that column
-    way = [0] * (n + 1)    # backtracking pointers for the augmenting path
+    # float, not int: the potentials absorb `delta`, which can be INF.
+    u: list[float] = [0.0] * (n + 1)  # row potentials
+    v: list[float] = [0.0] * (n + 1)  # column potentials
+    p = [0] * (n + 1)  # p[col] = row currently matched to that column
+    way = [0] * (n + 1)  # backtracking pointers for the augmenting path
 
     for i in range(1, n + 1):
         p[0] = i

@@ -1,6 +1,9 @@
 """The Observer pattern: the pipeline announces, listeners react."""
 
+from dataclasses import FrozenInstanceError
 from datetime import datetime, timedelta
+
+import pytest
 
 from domain.events import EventBus, RequestPlaced, RequestStateChanged, SourcingStarted
 from domain.pipeline import Pipeline, RequestState
@@ -54,9 +57,9 @@ def test_entering_sourcing_starts_the_sla_clock():
 
     pipeline = Pipeline(client_name="Alfa", events=bus)
     pipeline.move_to(RequestState.OPEN)
-    assert received == []           # not yet
+    assert received == []  # not yet
     pipeline.move_to(RequestState.SOURCING)
-    assert len(received) == 1       # now
+    assert len(received) == 1  # now
     assert received[0].client_name == "Alfa"
 
 
@@ -104,15 +107,12 @@ def test_listeners_only_get_the_event_types_they_asked_for():
     pipeline.move_to(RequestState.OPEN)
     pipeline.move_to(RequestState.SOURCING)
 
-    assert len(state_changes) == 2   # both moves
-    assert len(sourcing) == 1        # only the one that matters
+    assert len(state_changes) == 2  # both moves
+    assert len(sourcing) == 1  # only the one that matters
 
 
 def test_events_are_immutable_facts():
     """An event describes something that already happened. It cannot be edited."""
     event = SourcingStarted(datetime(2026, 8, 1), "BCS")
-    try:
+    with pytest.raises(FrozenInstanceError):
         event.client_name = "someone else"
-        assert False, "should have raised"
-    except Exception:
-        pass

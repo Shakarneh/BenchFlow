@@ -1,0 +1,57 @@
+# Tool configuration in one file. Keeping it here instead of four separate
+# dotfiles means one place to look when a check fails.
+
+[tool.black]
+# The formatter. It has almost no options on purpose -- that is the point:
+# nobody argues about style because nobody chooses it.
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+# The linter. Finds unused imports, undefined names, bad practice.
+line-length = 100
+target-version = "py313"
+exclude = [".venv", "*/migrations/*"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors  -- the PEP 8 rules
+    "F",   # pyflakes            -- unused imports, undefined names
+    "I",   # isort               -- import order
+    "UP",  # pyupgrade           -- old syntax that has a modern form
+    "B",   # bugbear             -- likely bugs, e.g. mutable default arguments
+]
+ignore = [
+    "E501",  # line too long -- black already handles line length
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may shadow names and use fixtures in ways linters dislike.
+"tests/*" = ["F811", "F401"]
+
+[tool.mypy]
+# The type checker. Catches "you passed a str where a Decimal was expected"
+# before the code ever runs.
+python_version = "3.13"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+exclude = ["migrations", ".venv"]
+
+# Start permissive. Tightening these one at a time is a follow-up task, not
+# a reason to fail the build today.
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+
+# domain/ is pure Python with no framework magic, so it can be held to a
+# higher standard than the rest.
+[[tool.mypy.overrides]]
+module = "domain.*"
+disallow_untyped_defs = false
+warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"

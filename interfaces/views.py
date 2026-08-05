@@ -10,8 +10,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from interfaces.permissions import IsAccountManager
-
 from infrastructure.cache import TTL_SECONDS, proposal_key
 from infrastructure.container import propose_candidates
 from infrastructure.models import RequestModel
@@ -20,6 +18,7 @@ from infrastructure.repositories import (
     DjangoSpecialistRepository,
     request_to_domain,
 )
+from interfaces.permissions import IsAccountManager
 from interfaces.serializers import RequestSerializer, SpecialistSerializer
 
 
