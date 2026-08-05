@@ -14,11 +14,13 @@ This lives in infrastructure/ because locking is a database capability --
 application/ is not allowed to know the database exists.
 """
 
+import logging
 from decimal import Decimal
 
 from django.db import transaction
 
 from domain.allocation import Allocation, Calendar
+from domain.errors import OverAllocated
 from infrastructure.models import (
     AllocationModel,
     PlacementModel,
@@ -27,8 +29,7 @@ from infrastructure.models import (
 )
 
 
-class OverAllocated(Exception):
-    """Refused: this booking would push the specialist past 100%."""
+logger = logging.getLogger(__name__)
 
 
 def _lock_specialist(specialist_id: int) -> SpecialistModel:
@@ -55,6 +56,13 @@ def place(specialist_id: int, request_id: int, bill_rate: Decimal) -> PlacementM
     wanted = Allocation(request.starts_on, request.ends_on, request.fraction)
 
     if not calendar.can_take(wanted):
+        # WARNING, not ERROR: a refused booking is the system working, not
+        # breaking. Log levels are a signal to whoever reads the logs.
+        logger.warning(
+            "placement refused: specialist=%s request=%s peak=%s wanted=%s",
+            specialist.full_name, request.client_name,
+            calendar.peak_load(), request.fraction,
+        )
         raise OverAllocated(
             f"{specialist.full_name} cannot take {request.fraction:.0%} "
             f"from {request.starts_on} to {request.ends_on} "
@@ -68,10 +76,15 @@ def place(specialist_id: int, request_id: int, bill_rate: Decimal) -> PlacementM
         ends_on=request.ends_on,
         fraction=request.fraction,
     )
-    return PlacementModel.objects.create(
+    placement = PlacementModel.objects.create(
         specialist=specialist,
         request=request,
         allocation=allocation,
         cost_rate=specialist.cost_rate,
         bill_rate=bill_rate,
     )
+    logger.info(
+        "placement created: specialist=%s request=%s cost=%s bill=%s",
+        specialist.full_name, request.client_name, placement.cost_rate, placement.bill_rate,
+    )
+    return placement
