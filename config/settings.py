@@ -28,9 +28,12 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Reads from .env so production simply sets DJANGO_DEBUG=false. Default is
-# True for local convenience -- deployment must opt OUT, deliberately.
-DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
+#
+# FAIL-SAFE DEFAULT: off unless explicitly switched on. If someone forgets
+# this variable in production, the consequence is safe (plain error pages).
+# The reverse default would leak tracebacks, settings and SQL to the public
+# on the same mistake. Development opts IN via .env.
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 
 # Which hostnames this site will answer to. Empty is fine while DEBUG=True;
 # in production an empty list is refused by Django, which is the point --
