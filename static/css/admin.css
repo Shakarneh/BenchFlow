@@ -163,7 +163,55 @@ div.breadcrumbs {
   border-bottom: 1px solid var(--hairline-color);
 }
 
+/* On the index page the module title is a link styled with
+   --header-link-color, which is paper-white in this palette -- invisible on
+   a sand bar. Ink it. */
+a.section:link,
+a.section:visited,
+.module caption a:link,
+.module caption a:visited {
+  color: #1a1815;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
 #content-main .module tbody tr:hover { background: #f7f3eb; }
+
+/* Page headings in the display face, like the dashboard. */
+#content h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.1rem;
+}
+
+/* Django's add/change icons ship bright green and amber, which fight a warm
+   palette. Same icons, redrawn in cognac and ink.
+   background-size is not optional: an SVG with no width/height stretches to
+   fill whatever box it lands in, and the recent-actions rows are two lines
+   tall -- which is exactly how you get giant icons over the text. */
+.addlink,
+.changelink,
+.deletelink {
+  background-size: 14px 14px;
+  background-position: 0 3px;
+  background-repeat: no-repeat;
+  padding-left: 19px;
+}
+
+.addlink {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.2v9.6M3.2 8h9.6' stroke='%238a5a34' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.changelink {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M11.3 2.6l2.1 2.1L5.9 12.2l-3 .9.9-3z' fill='none' stroke='%236e6557' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* The recent-actions list uses the same classes on two-line rows. */
+ul.actionlist li { background-position: 0 4px; line-height: 1.45; }
+ul.actionlist li .mini { display: block; }
 
 th, td { border-bottom: 1px solid var(--hairline-color); }
 
