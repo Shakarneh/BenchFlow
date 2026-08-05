@@ -29,8 +29,7 @@ def build_scenario(make_request, make_specialist):
 
 
 def names(results):
-    return {request.client_name: sorted(s.full_name for s in chosen)
-            for request, chosen in results}
+    return {request.client_name: sorted(s.full_name for s in chosen) for request, chosen in results}
 
 
 # ── Optimal succeeds where greedy failed ──────────────────────────────────

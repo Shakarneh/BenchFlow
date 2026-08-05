@@ -23,8 +23,7 @@ def fill_all_requests_task() -> dict:
         "fully_staffed": sum(1 for p in proposals if p.is_fully_staffed),
         "total_shortfall": sum(p.shortfall for p in proposals),
         "assignments": {
-            p.request.client_name: [s.full_name for s in p.proposed]
-            for p in proposals
+            p.request.client_name: [s.full_name for s in p.proposed] for p in proposals
         },
     }
 

@@ -9,7 +9,7 @@ cares subscribes. Adding a fifth reaction later touches no existing code --
 that is the Open/Closed principle from Phase 2, at the system level.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 
 from domain.pipeline import RequestState

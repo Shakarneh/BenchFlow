@@ -51,9 +51,7 @@ def make_world():
         cost_rate=Decimal("65.00"),
         available_from=date(2026, 8, 1),
     )
-    SpecialistSkillModel.objects.create(
-        specialist=alice, skill=django, level=Level.SENIOR.value
-    )
+    SpecialistSkillModel.objects.create(specialist=alice, skill=django, level=Level.SENIOR.value)
     request = RequestModel.objects.create(
         client_name="BCS",
         headcount=1,
@@ -61,9 +59,7 @@ def make_world():
         ends_on=date(2026, 12, 31),
         max_bill_rate=Decimal("90.00"),
     )
-    RequestRequirementModel.objects.create(
-        request=request, skill=django, level=Level.MIDDLE.value
-    )
+    RequestRequirementModel.objects.create(request=request, skill=django, level=Level.MIDDLE.value)
     return request
 
 

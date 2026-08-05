@@ -22,7 +22,7 @@ class SkillLevel:
     skill: Skill
     level: Level
 
-    def covers(self, required):
+    def covers(self, required: "SkillLevel") -> bool:
         """Does what I have satisfy what is required?
 
         Same skill, and at least as senior. The skill must match first --

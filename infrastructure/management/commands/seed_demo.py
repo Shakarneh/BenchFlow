@@ -23,8 +23,16 @@ from infrastructure.models import (
 )
 
 SKILLS = [
-    "Programming", "Python", "Django", "FastAPI", "PostgreSQL",
-    "Docker", "Linux", "Go", "React", "JavaScript",
+    "Programming",
+    "Python",
+    "Django",
+    "FastAPI",
+    "PostgreSQL",
+    "Docker",
+    "Linux",
+    "Go",
+    "React",
+    "JavaScript",
 ]
 
 # skill -> skills it necessarily includes. This is the DAG.
@@ -40,22 +48,60 @@ IMPLIES = {
 
 # (name, cost_rate, available_from, [(skill, level), ...])
 SPECIALISTS = [
-    ("Alice Johnson", "65.00", date(2026, 8, 10), [("Django", Level.MIDDLE), ("Python", Level.SENIOR)]),
-    ("Bob Smith", "55.00", date(2026, 8, 15), [("FastAPI", Level.SENIOR), ("PostgreSQL", Level.MIDDLE)]),
-    ("Carol Davis", "80.00", date(2026, 9, 1), [("Django", Level.SENIOR), ("Python", Level.SENIOR), ("Docker", Level.MIDDLE)]),
-    ("Dmitry Volkov", "48.00", date(2026, 8, 1), [("Django", Level.JUNIOR), ("Python", Level.MIDDLE)]),
+    (
+        "Alice Johnson",
+        "65.00",
+        date(2026, 8, 10),
+        [("Django", Level.MIDDLE), ("Python", Level.SENIOR)],
+    ),
+    (
+        "Bob Smith",
+        "55.00",
+        date(2026, 8, 15),
+        [("FastAPI", Level.SENIOR), ("PostgreSQL", Level.MIDDLE)],
+    ),
+    (
+        "Carol Davis",
+        "80.00",
+        date(2026, 9, 1),
+        [("Django", Level.SENIOR), ("Python", Level.SENIOR), ("Docker", Level.MIDDLE)],
+    ),
+    (
+        "Dmitry Volkov",
+        "48.00",
+        date(2026, 8, 1),
+        [("Django", Level.JUNIOR), ("Python", Level.MIDDLE)],
+    ),
     ("Elena Petrova", "72.00", date(2026, 8, 20), [("Go", Level.SENIOR), ("Docker", Level.SENIOR)]),
-    ("Farid Hassan", "60.00", date(2026, 10, 1), [("Django", Level.MIDDLE), ("React", Level.MIDDLE)]),
+    (
+        "Farid Hassan",
+        "60.00",
+        date(2026, 10, 1),
+        [("Django", Level.MIDDLE), ("React", Level.MIDDLE)],
+    ),
 ]
 
 # (client, headcount, starts_on, ends_on, max_bill_rate, fraction, [(skill, level), ...])
 REQUESTS = [
-    ("BCS Mir Investicij", 2, date(2026, 9, 15), date(2027, 3, 15), "70.00", "0.50",
-     [("Django", Level.MIDDLE)]),
-    ("Alfa Capital", 1, date(2026, 9, 1), date(2026, 12, 31), "90.00", "1.00",
-     [("Go", Level.SENIOR), ("Docker", Level.MIDDLE)]),
-    ("MKB", 3, date(2026, 10, 1), date(2027, 4, 1), "65.00", "1.00",
-     [("Python", Level.MIDDLE)]),
+    (
+        "BCS Mir Investicij",
+        2,
+        date(2026, 9, 15),
+        date(2027, 3, 15),
+        "70.00",
+        "0.50",
+        [("Django", Level.MIDDLE)],
+    ),
+    (
+        "Alfa Capital",
+        1,
+        date(2026, 9, 1),
+        date(2026, 12, 31),
+        "90.00",
+        "1.00",
+        [("Go", Level.SENIOR), ("Docker", Level.MIDDLE)],
+    ),
+    ("MKB", 3, date(2026, 10, 1), date(2027, 4, 1), "65.00", "1.00", [("Python", Level.MIDDLE)]),
 ]
 
 

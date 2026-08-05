@@ -28,10 +28,7 @@ def specialist_to_domain(row: SpecialistModel) -> Specialist:
         full_name=row.full_name,
         cost_rate=row.cost_rate,
         available_from=row.available_from,
-        skills=[
-            SkillLevel(Skill(link.skill.name), Level(link.level))
-            for link in row.skills.all()
-        ],
+        skills=[SkillLevel(Skill(link.skill.name), Level(link.level)) for link in row.skills.all()],
         allocations=[
             Allocation(booking.starts_on, booking.ends_on, booking.fraction)
             for booking in row.allocations.all()
@@ -52,8 +49,7 @@ def request_to_domain(row: RequestModel) -> Request:
     return Request(
         client_name=row.client_name,
         required_skills=[
-            SkillLevel(Skill(req.skill.name), Level(req.level))
-            for req in row.requirements.all()
+            SkillLevel(Skill(req.skill.name), Level(req.level)) for req in row.requirements.all()
         ],
         headcount=row.headcount,
         starts_on=row.starts_on,
