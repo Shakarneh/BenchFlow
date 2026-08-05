@@ -28,9 +28,27 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Reads from .env so production simply sets DJANGO_DEBUG=false. Default is
+# True for local convenience -- deployment must opt OUT, deliberately.
+DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
 
-ALLOWED_HOSTS = []
+# Which hostnames this site will answer to. Empty is fine while DEBUG=True;
+# in production an empty list is refused by Django, which is the point --
+# it blocks HTTP Host header attacks.
+ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h]
+
+# ── Production hardening ──────────────────────────────────────────────────
+# All of these REQUIRE HTTPS, so they must stay off locally or nothing works.
+# Turning them on together with DEBUG=False is what `check --deploy` wants.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True          # http:// -> https://, always
+    SESSION_COOKIE_SECURE = True        # never send the login cookie over http
+    CSRF_COOKIE_SECURE = True           # same for the CSRF token
+    SECURE_HSTS_SECONDS = 31536000      # 1 year: browsers refuse http entirely
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True  # stop browsers guessing content types
+    X_FRAME_OPTIONS = "DENY"            # cannot be embedded in an iframe
 
 
 # Application definition
