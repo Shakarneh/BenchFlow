@@ -1,0 +1,283 @@
+/* ============================================================================
+   benchFlow — Django admin, reskinned
+   ----------------------------------------------------------------------------
+   The admin is built almost entirely on CSS custom properties, so it can be
+   rethemed by overriding variables instead of fighting its stylesheets.
+   This file is loaded AFTER the admin's own base.css (see
+   interfaces/templates/admin/base_site.html), so these values win.
+
+   Django ships light, dark and "follow the system" themes. We override all
+   three deliberately: one warm paper theme everywhere, matching the
+   dashboard, so the product looks like one product.
+   ========================================================================= */
+
+:root,
+html[data-theme="light"],
+html[data-theme="dark"],
+html[data-theme="auto"] {
+  /* Brand */
+  --primary:        #2c2822;
+  --secondary:      #1a1815;
+  --accent:         #8a5a34;
+  --primary-fg:     #f3efe7;
+
+  /* Body */
+  --body-fg:          #1a1815;
+  --body-bg:          #f3efe7;
+  --body-quiet-color: #6e6557;
+  --body-loud-color:  #1a1815;
+
+  /* Header */
+  --header-color:          #cfc6b5;
+  --header-branding-color: #f3efe7;
+  --header-bg:             #1a1815;
+  --header-link-color:     #f3efe7;
+
+  /* Breadcrumbs */
+  --breadcrumbs-fg:      #6e6557;
+  --breadcrumbs-link-fg: #1a1815;
+  --breadcrumbs-bg:      #ece6da;
+
+  /* Links */
+  --link-fg:           #8a5a34;
+  --link-hover-color:  #6f4527;
+  --link-selected-fg:  #6f4527;
+
+  /* Lines and fills */
+  --hairline-color: #e4dccc;
+  --border-color:   #ddd4c2;
+  --darkened-bg:    #f7f3eb;
+  --selected-bg:    #ece6da;
+  --selected-row:   #f3e7da;
+
+  /* Messages */
+  --error-fg:             #9c3f2c;
+  --message-success-bg:   #e7eee2;
+  --message-warning-bg:   #f7efdc;
+  --message-error-bg:     #f7e6e0;
+
+  /* Buttons */
+  --button-fg:               #f3efe7;
+  --button-bg:               #2c2822;
+  --button-hover-bg:         #1a1815;
+  --default-button-bg:       #8a5a34;
+  --default-button-hover-bg: #6f4527;
+  --close-button-bg:         #8d8271;
+  --close-button-hover-bg:   #6e6557;
+  --delete-button-bg:        #9c3f2c;
+  --delete-button-hover-bg:  #82311f;
+  --object-tools-bg:         #2c2822;
+  --object-tools-hover-bg:   #1a1815;
+
+  --font-family-primary: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-family-monospace: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+/* Same warm grain as the dashboard. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+body { position: relative; }
+#container { position: relative; z-index: 1; }
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+#header {
+  padding: 14px 40px;
+  border-bottom: 1px solid #322d26;
+}
+
+#branding h1,
+#site-name {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+#branding h1 a:link,
+#branding h1 a:visited { color: var(--header-branding-color); }
+
+#site-name em { font-style: italic; color: #c08a5c; }
+
+/* The wordmark's small badge, matching the dashboard's mark. */
+#site-name .mark {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #f3efe7;
+  color: #1a1815;
+  margin-right: 0.55rem;
+  vertical-align: -6px;
+}
+
+#user-tools {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* We force one theme, so the light/dark switcher would be a lie. */
+button.theme-toggle { display: none; }
+
+/* ── Breadcrumbs ─────────────────────────────────────────────────────────── */
+
+div.breadcrumbs {
+  padding: 12px 40px;
+  border-bottom: 1px solid var(--hairline-color);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── Modules (the boxes on every page) ───────────────────────────────────── */
+
+.module {
+  border: 1px solid var(--hairline-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fcfaf6;
+  box-shadow: 0 1px 2px rgba(60, 44, 24, 0.05);
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: #ece6da;
+  color: #1a1815;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+/* On the index page the module title is a link styled with
+   --header-link-color, which is paper-white in this palette -- invisible on
+   a sand bar. Ink it. */
+a.section:link,
+a.section:visited,
+.module caption a:link,
+.module caption a:visited {
+  color: #1a1815;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+#content-main .module tbody tr:hover { background: #f7f3eb; }
+
+/* Page headings in the display face, like the dashboard. */
+#content h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.1rem;
+}
+
+/* Django's add/change icons ship bright green and amber, which fight a warm
+   palette. Same icons, redrawn in cognac and ink.
+   background-size is not optional: an SVG with no width/height stretches to
+   fill whatever box it lands in, and the recent-actions rows are two lines
+   tall -- which is exactly how you get giant icons over the text. */
+.addlink,
+.changelink,
+.deletelink {
+  background-size: 14px 14px;
+  background-position: 0 3px;
+  background-repeat: no-repeat;
+  padding-left: 19px;
+}
+
+.addlink {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.2v9.6M3.2 8h9.6' stroke='%238a5a34' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.changelink {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M11.3 2.6l2.1 2.1L5.9 12.2l-3 .9.9-3z' fill='none' stroke='%236e6557' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* The recent-actions list uses the same classes on two-line rows. */
+ul.actionlist li { background-position: 0 4px; line-height: 1.45; }
+ul.actionlist li .mini { display: block; }
+
+th, td { border-bottom: 1px solid var(--hairline-color); }
+
+/* Rates, dates and the peak-load column read better in a mono face. */
+.field-cost_rate, .field-max_bill_rate, .field-peak_load,
+.field-starts_on, .field-ends_on, .field-fraction, .field-available_from {
+  font-family: var(--font-family-monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88em;
+}
+
+/* ── Buttons and inputs ──────────────────────────────────────────────────── */
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+  border-radius: 6px;
+  padding: 9px 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.button:hover, input[type=submit]:hover, .submit-row input:hover, a.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -8px rgba(26, 24, 21, 0.5);
+}
+
+input[type=text], input[type=password], input[type=email], input[type=url],
+input[type=number], textarea, select, .vTextField {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 7px 9px;
+  background: #fff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(138, 90, 52, 0.14);
+  outline: none;
+}
+
+.object-tools a { border-radius: 6px; letter-spacing: 0.04em; }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+
+#nav-sidebar { border-right: 1px solid var(--hairline-color); }
+#nav-sidebar .current-model { background: var(--selected-row); }
+.toggle-nav-sidebar { border-right: 1px solid var(--hairline-color); }
+
+/* ── Login page ──────────────────────────────────────────────────────────── */
+
+.login #container {
+  border: 1px solid var(--hairline-color);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(60, 44, 24, 0.05), 0 24px 48px -30px rgba(60, 44, 24, 0.5);
+  overflow: hidden;
+}
+
+.login #header { border-radius: 0; }
+.login .submit-row input { width: 100%; }
+
+/* ── Motion preference ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,65 +1,61 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>benchFlow — resourcing dashboard</title>
-  <style>
-    :root {
-      --bg: #0f1117; --panel: #171a23; --line: #262a36;
-      --text: #e6e8ee; --dim: #8b90a0;
-      --ok: #3ddc84; --bad: #ff6b6b; --accent: #6c8cff;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 2rem 1.5rem; background: var(--bg); color: var(--text);
-      font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    .wrap { max-width: 1000px; margin: 0 auto; }
-    h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
-    .sub { color: var(--dim); margin-bottom: 2rem; }
-    .sub a { color: var(--accent); }
+  <meta name="description" content="Resourcing and allocation for IT service companies. The matcher solves the assignment problem.">
 
-    .card {
-      background: var(--panel); border: 1px solid var(--line);
-      border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: 1rem;
-    }
-    .row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .client { font-weight: 600; font-size: 1.05rem; }
-    .meta { color: var(--dim); font-size: .88rem; }
-    .tag {
-      display: inline-block; background: #21263a; border: 1px solid var(--line);
-      border-radius: 999px; padding: .1rem .6rem; font-size: .8rem; margin-right: .3rem;
-    }
-    button {
-      background: var(--accent); color: #0b0d13; border: 0; border-radius: 7px;
-      padding: .5rem 1.1rem; font-weight: 600; font-size: .9rem; cursor: pointer;
-    }
-    button:disabled { opacity: .5; cursor: default; }
-
-    .result { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 1rem; }
-    .verdict { font-weight: 600; margin-bottom: .6rem; }
-    .staffed { color: var(--ok); }
-    .short { color: var(--bad); }
-    .person { padding: .35rem 0; border-bottom: 1px dashed var(--line); }
-    .person:last-child { border: 0; }
-    .name { font-weight: 600; }
-    .rate { color: var(--dim); }
-    .why { color: var(--bad); font-size: .85rem; }
-    .muted { color: var(--dim); font-size: .85rem; margin-top: .8rem; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{% static 'css/benchflow.css' %}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a1815'/%3E%3Cpath d='M8 20h16M8 14h16' stroke='%23f3efe7' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='14' r='2.6' fill='%238a5a34'/%3E%3Ccircle cx='21' cy='20' r='2.6' fill='%238a5a34'/%3E%3C/svg%3E">
 </head>
 <body>
-<div class="wrap">
-  <h1>benchFlow</h1>
-  <p class="sub">
-    Open client requests. Press <strong>Propose</strong> to run the Hungarian matcher —
-    it answers who to place, and why everyone else was rejected.
-    <a href="/api/docs/">API docs</a> · <a href="/admin/">admin</a>
-  </p>
 
-  <div id="requests">Loading…</div>
-</div>
+<header class="masthead">
+  <div class="shell masthead__inner">
+    <a class="wordmark" href="/">
+      <span class="wordmark__mark" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 32 32" fill="none">
+          <path d="M6 20h20M6 12h20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="11" cy="12" r="3.2" fill="#8a5a34"/>
+          <circle cx="21" cy="20" r="3.2" fill="#8a5a34"/>
+        </svg>
+      </span>
+      <span>bench<em>Flow</em></span>
+    </a>
+    <nav class="nav">
+      <a href="/api/docs/">API</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="lede">
+    <span class="eyebrow">Resourcing &amp; allocation</span>
+    <h1>Open client requests</h1>
+    <p class="lede__text">
+      Press <strong>Propose</strong> and the Hungarian matcher solves the assignment
+      problem for that request — who to place, and why everyone else was not.
+    </p>
+
+    <dl class="stats" id="stats" hidden>
+      <div><dt class="label">Open requests</dt><dd id="stat-requests">—</dd></div>
+      <div><dt class="label">Seats to fill</dt><dd id="stat-seats">—</dd></div>
+      <div><dt class="label">In the pool</dt><dd id="stat-people">—</dd></div>
+    </dl>
+  </section>
+
+  <section id="requests" class="stack" aria-live="polite"></section>
+</main>
+
+<footer class="footer shell">
+  <span>benchFlow — Django · PostgreSQL · Redis · Celery</span>
+  <span>Hungarian algorithm · O(n³)</span>
+</footer>
 
 <script>
 // Plain fetch() against the same API documented at /api/docs/. No build step,
@@ -67,35 +63,88 @@
 
 const money = n => Number(n).toFixed(2);
 
+// Everything below is inserted with innerHTML, so anything that came from the
+// database is escaped first. Without this, a client named <script>… would run
+// as code in the browser (that attack is called XSS).
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const skeleton = () => `
+  <div class="card skeleton">
+    <div class="bone bone--title"></div>
+    <div class="bone bone--wide"></div>
+    <div class="bone bone--half"></div>
+  </div>`.repeat(3);
+
 async function loadRequests() {
   const box = document.getElementById("requests");
+  box.innerHTML = skeleton();
+
   const res = await fetch("/api/requests/");
   if (res.status === 403) {
-    box.innerHTML = `<div class="card">Please <a href="/admin/">log in</a> first — the API requires it.</div>`;
+    box.innerHTML = `
+      <div class="card"><div class="card__head">
+        <p class="empty">The API requires a login. <a href="/admin/">Sign in</a> to continue.</p>
+      </div></div>`;
     return;
   }
+
   const requests = await res.json();
-  box.innerHTML = requests.map(renderRequest).join("");
+  box.innerHTML = requests.length
+    ? requests.map(renderRequest).join("")
+    : `<div class="card"><div class="card__head"><p class="empty">No open requests.</p></div></div>`;
+
+  showStats(requests);
 }
 
-function renderRequest(r) {
-  const skills = r.required_skills
-    .map(s => `<span class="tag">${s.skill} · ${s.level}</span>`).join("");
+function renderRequest(r, i) {
+  const skills = r.required_skills.map(s => `
+    <span class="chip"><b>${esc(s.skill)}</b><span class="chip--level">${esc(s.level)}</span></span>`).join("");
+
   return `
-    <div class="card" id="req-${r.id}">
-      <div class="row">
+    <article class="card" id="req-${r.id}" style="--i:${i}">
+      <div class="card__head">
         <div>
-          <div class="client">${r.client_name}</div>
-          <div class="meta">
-            needs ${r.headcount} × ${Math.round(r.fraction * 100)}% ·
-            ${r.starts_on} → ${r.ends_on} · budget ${money(r.max_bill_rate)}/h
+          <h2 class="client">${esc(r.client_name)}</h2>
+
+          <div class="spec">
+            <div>
+              <span class="label">Headcount</span>
+              <span class="value"><span class="num">${r.headcount}</span> ×
+                <span class="num">${Math.round(r.fraction * 100)}%</span></span>
+            </div>
+            <div>
+              <span class="label">Window</span>
+              <span class="value num">${esc(r.starts_on)} → ${esc(r.ends_on)}</span>
+            </div>
+            <div>
+              <span class="label">Budget</span>
+              <span class="value"><span class="num">${money(r.max_bill_rate)}</span> / h</span>
+            </div>
           </div>
-          <div style="margin-top:.5rem">${skills}</div>
+
+          <div class="chips">${skills}</div>
         </div>
-        <button onclick="propose(${r.id}, this)">Propose</button>
+
+        <button class="btn" onclick="propose(${r.id}, this)">Propose</button>
       </div>
+
       <div class="result" id="result-${r.id}" hidden></div>
-    </div>`;
+    </article>`;
+}
+
+function showStats(requests) {
+  document.getElementById("stat-requests").textContent = requests.length;
+  document.getElementById("stat-seats").textContent =
+    requests.reduce((total, r) => total + r.headcount, 0);
+  document.getElementById("stats").hidden = false;
+
+  // Nice-to-have only: if this call is not allowed, the strip simply stays
+  // as it is rather than breaking the page.
+  fetch("/api/specialists/")
+    .then(res => (res.ok ? res.json() : null))
+    .then(people => { if (people) document.getElementById("stat-people").textContent = people.length; })
+    .catch(() => {});
 }
 
 async function propose(id, button) {
@@ -115,7 +164,7 @@ async function propose(id, button) {
   box.hidden = false;
 
   if (res.status === 403) {
-    box.innerHTML = `<div class="why">Only account managers may propose candidates.</div>`;
+    box.innerHTML = `<p class="empty">Only account managers may propose candidates.</p>`;
     return;
   }
   box.innerHTML = renderResult(await res.json());
@@ -123,28 +172,33 @@ async function propose(id, button) {
 
 function renderResult(data) {
   const verdict = data.is_fully_staffed
-    ? `<div class="verdict staffed">✓ Fully staffed</div>`
-    : `<div class="verdict short">✗ Short by ${data.shortfall}</div>`;
+    ? `<div class="verdict verdict--ok">✓ Fully staffed</div>`
+    : `<div class="verdict verdict--short">Short by ${data.shortfall}</div>`;
 
   const proposed = data.proposed.length
     ? data.proposed.map(p => `
-        <div class="person">
-          <span class="name">${p.full_name}</span>
-          <span class="rate">— ${money(p.cost_rate)}/h · free from ${p.available_from}</span>
+        <div class="person person--in">
+          <span class="person__name">${esc(p.full_name)}</span>
+          <span class="person__meta">
+            <span class="num">${money(p.cost_rate)}</span>/h ·
+            free from <span class="num">${esc(p.available_from)}</span>
+          </span>
         </div>`).join("")
-    : `<div class="muted">Nobody could be proposed.</div>`;
+    : `<p class="empty">Nobody could be proposed.</p>`;
 
   const rejected = data.rejected.map(r => `
     <div class="person">
-      <span class="name">${r.full_name}</span>
-      <div class="why">${r.reasons.join(" · ")}</div>
+      <div>
+        <span class="person__name">${esc(r.full_name)}</span>
+        <div class="reasons">${r.reasons.map(x => `<span class="reason">${esc(x)}</span>`).join("")}</div>
+      </div>
     </div>`).join("");
 
   return `
     ${verdict}
-    ${proposed}
-    ${rejected ? `<div class="muted">Not proposed:</div>${rejected}` : ""}
-    <div class="muted">${data.cached ? "served from cache" : "freshly computed"}</div>`;
+    <div class="group"><span class="label">Proposed</span>${proposed}</div>
+    ${rejected ? `<div class="group"><span class="label">Not proposed</span>${rejected}</div>` : ""}
+    <div class="note">${data.cached ? "served from cache" : "freshly computed"}</div>`;
 }
 
 // Django requires this token on POST -- it proves the request came from this

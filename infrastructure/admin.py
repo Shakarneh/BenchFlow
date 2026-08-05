@@ -69,3 +69,11 @@ class RequestAdmin(admin.ModelAdmin):
     list_filter = ["starts_on"]
     search_fields = ["client_name"]
     inlines = [RequestRequirementInline]
+
+
+# Branding. The header bar itself is replaced in
+# interfaces/templates/admin/base_site.html; these three drive the browser
+# tab, the login page and the index heading.
+admin.site.site_header = "benchFlow"
+admin.site.site_title = "benchFlow admin"
+admin.site.index_title = "Back office"
