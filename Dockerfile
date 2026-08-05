@@ -36,4 +36,12 @@ EXPOSE 8000
 #
 # $PORT because hosting platforms choose the port and tell you via that
 # variable; the default keeps docker-compose working unchanged.
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
+# On every start: apply migrations, make sure demo data and an admin exist,
+# then serve. The `|| true` on the last two means "nice to have, not fatal" --
+# they fail harmlessly when the user already exists or the vars are unset,
+# and the site must still come up.
+CMD ["sh", "-c", "\
+python manage.py migrate --noinput && \
+(python manage.py seed_demo || true) && \
+(python manage.py createsuperuser --noinput || true) && \
+gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
