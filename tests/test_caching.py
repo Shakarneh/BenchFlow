@@ -42,9 +42,7 @@ def make_world():
         cost_rate=Decimal("65.00"),
         available_from=date(2026, 8, 1),
     )
-    SpecialistSkillModel.objects.create(
-        specialist=alice, skill=django, level=Level.SENIOR.value
-    )
+    SpecialistSkillModel.objects.create(specialist=alice, skill=django, level=Level.SENIOR.value)
     request = RequestModel.objects.create(
         client_name="BCS",
         headcount=1,
@@ -52,9 +50,7 @@ def make_world():
         ends_on=date(2026, 12, 31),
         max_bill_rate=Decimal("90.00"),
     )
-    RequestRequirementModel.objects.create(
-        request=request, skill=django, level=Level.MIDDLE.value
-    )
+    RequestRequirementModel.objects.create(request=request, skill=django, level=Level.MIDDLE.value)
     return request, alice
 
 
@@ -89,13 +85,13 @@ def test_changing_a_specialist_invalidates_the_cache(admin_client):
     request, alice = make_world()
     url = f"/api/requests/{request.pk}/propose/"
 
-    admin_client.post(url)                                   # warm the cache
-    assert admin_client.post(url).json()["cached"] is True    # confirmed warm
+    admin_client.post(url)  # warm the cache
+    assert admin_client.post(url).json()["cached"] is True  # confirmed warm
 
     alice.cost_rate = Decimal("70.00")
     alice.save()
 
-    assert admin_client.post(url).json()["cached"] is False   # forgotten
+    assert admin_client.post(url).json()["cached"] is False  # forgotten
 
 
 @pytest.mark.django_db
@@ -106,7 +102,7 @@ def test_a_stale_answer_is_never_served_after_data_changes(admin_client):
 
     assert admin_client.post(url).json()["proposed"][0]["full_name"] == "Alice Johnson"
 
-    alice.cost_rate = Decimal("500.00")     # way over the 90.00 budget
+    alice.cost_rate = Decimal("500.00")  # way over the 90.00 budget
     alice.save()
 
     assert admin_client.post(url).json()["proposed"] == []

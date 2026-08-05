@@ -7,8 +7,8 @@ company's income statement in miniature, so exactness is the whole point.
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
-CENTS = Decimal("0.01")          # money is quantized to cents
-RATIO = Decimal("0.0001")        # ratios to 4 places, e.g. 0.3077 = 30.77%
+CENTS = Decimal("0.01")  # money is quantized to cents
+RATIO = Decimal("0.0001")  # ratios to 4 places, e.g. 0.3077 = 30.77%
 
 
 @dataclass(frozen=True)
@@ -38,7 +38,7 @@ class Engagement:
 
     def margin_ratio(self) -> Decimal:
         """The share of every billed unit that we keep. 0.3077 = 30.77%."""
-        return((self.bill_rate - self.cost_rate) / self.bill_rate).quantize(RATIO, ROUND_HALF_UP)
+        return ((self.bill_rate - self.cost_rate) / self.bill_rate).quantize(RATIO, ROUND_HALF_UP)
 
     @property
     def is_profitable(self) -> bool:

@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('infrastructure', '0001_initial'),
+        ("infrastructure", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='skillmodel',
-            name='implies',
-            field=models.ManyToManyField(blank=True, help_text='Skills this one necessarily includes. Django implies Python.', related_name='implied_by', to='infrastructure.skillmodel'),
+            model_name="skillmodel",
+            name="implies",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Skills this one necessarily includes. Django implies Python.",
+                related_name="implied_by",
+                to="infrastructure.skillmodel",
+            ),
         ),
     ]

@@ -68,8 +68,10 @@ class Command(BaseCommand):
         rng = random.Random(42)
 
         self.stdout.write("")
-        self.stdout.write(f"{'requests x people':>18} | {'matcher':<10} | "
-                          f"{'unfilled':>8} | {'cost':>9} | {'ms':>10}")
+        self.stdout.write(
+            f"{'requests x people':>18} | {'matcher':<10} | "
+            f"{'unfilled':>8} | {'cost':>9} | {'ms':>10}"
+        )
         self.stdout.write("-" * 70)
 
         for n_requests, n_specialists in self.SIZES:
@@ -90,8 +92,10 @@ class Command(BaseCommand):
             self.stdout.write("-" * 70)
 
         self.stdout.write("")
-        self.stdout.write(self.style.SUCCESS(
-            "greedy    O(n log n)  fast, can strand requests, order-dependent\n"
-            "exhaustive O(k^n)     provably optimal, unusable past ~6 requests\n"
-            "hungarian O(n^3)      same answer as exhaustive, scales"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "greedy    O(n log n)  fast, can strand requests, order-dependent\n"
+                "exhaustive O(k^n)     provably optimal, unusable past ~6 requests\n"
+                "hungarian O(n^3)      same answer as exhaustive, scales"
+            )
+        )

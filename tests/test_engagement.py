@@ -14,7 +14,7 @@ def test_margin_is_bill_minus_cost():
 
 def test_margin_ratio_is_margin_over_bill():
     engagement = Engagement(cost_rate=Decimal("45.00"), bill_rate=Decimal("65.00"))
-    assert engagement.margin_ratio() == Decimal("0.3077")   # 20/65, half-up at 4 places
+    assert engagement.margin_ratio() == Decimal("0.3077")  # 20/65, half-up at 4 places
 
 
 def test_a_loss_making_engagement_is_legal_but_visible():
@@ -40,4 +40,4 @@ def test_zero_or_negative_rates_are_refused_at_creation():
 def test_margin_arithmetic_never_drifts():
     """The float horror show, done right: 0.1 + 0.2 style sums stay exact."""
     engagement = Engagement(cost_rate=Decimal("0.10"), bill_rate=Decimal("0.30"))
-    assert engagement.margin() == Decimal("0.20")           # float would give 0.19999...
+    assert engagement.margin() == Decimal("0.20")  # float would give 0.19999...

@@ -1,3 +1,4 @@
+from dataclasses import FrozenInstanceError
 from datetime import datetime, timedelta
 
 import pytest
@@ -102,7 +103,7 @@ def test_every_move_is_recorded_with_who_and_when():
 def test_history_entries_cannot_be_rewritten():
     pipeline = Pipeline()
     pipeline.move_to(RequestState.OPEN)
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         pipeline.history[0].by = "someone else"
 
 
