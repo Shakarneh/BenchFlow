@@ -58,6 +58,29 @@ REST_FRAMEWORK = {
     ],
 }
 
+# ── Cache: Redis ──────────────────────────────────────────────────────────
+# Matching is expensive (Hungarian is O(n^3)). The answer only changes when
+# the underlying data changes, so we remember it for a short while.
+REDIS_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/1")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "KEY_PREFIX": "benchflow",
+    }
+}
+
+# ── Celery: background jobs ───────────────────────────────────────────────
+# Redis doubles as the queue. Database 2 keeps jobs separate from the cache.
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://127.0.0.1:6379/2")
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TIMEZONE = "UTC"
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'benchFlow API',
     'DESCRIPTION': 'Resourcing and allocation for IT service companies. '

@@ -20,6 +20,7 @@ class SpecialistSerializer(serializers.Serializer):
 
 
 class RequestSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     client_name = serializers.CharField()
     headcount = serializers.IntegerField()
     starts_on = serializers.DateField()
