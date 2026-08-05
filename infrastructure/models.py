@@ -156,6 +156,41 @@ class AllocationModel(models.Model):
         return f"{self.specialist} {self.fraction:.0%} {self.starts_on}..{self.ends_on}"
 
 
+class PlacementModel(models.Model):
+    """A confirmed placement, with its commercial terms.
+
+    cost_rate and bill_rate are COPIED here, not looked up live: if the
+    specialist's rate changes next year, this placement's margin must not
+    silently change with it. A signed deal is a snapshot.
+    """
+
+    specialist = models.ForeignKey(
+        SpecialistModel, on_delete=models.PROTECT, related_name="placements"
+    )
+    request = models.ForeignKey(
+        RequestModel, on_delete=models.PROTECT, related_name="placements"
+    )
+    allocation = models.OneToOneField(
+        "AllocationModel", on_delete=models.CASCADE, related_name="placement"
+    )
+    cost_rate = models.DecimalField(max_digits=10, decimal_places=2)
+    bill_rate = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "placement"
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(cost_rate__gt=0) & models.Q(bill_rate__gt=0),
+                name="placement_rates_are_positive",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.specialist} -> {self.request.client_name}"
+
+
 class RequestRequirementModel(models.Model):
     """One skill required by one request, at a minimum level."""
 
