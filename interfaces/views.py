@@ -9,6 +9,7 @@ import logging
 from django.core.cache import cache
 from django.db import connection
 from django.shortcuts import get_object_or_404
+from django.views.generic import TemplateView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -47,6 +48,17 @@ class HealthCheck(APIView):
             logger.exception("health check failed: database unreachable")
             return Response({"status": "unhealthy", "database": "unreachable"}, status=503)
         return Response({"status": "ok", "database": "ok"})
+
+
+class Dashboard(TemplateView):
+    """GET / -- the one HTML page.
+
+    It renders a static template; everything dynamic is fetched by the
+    browser from the same API documented at /api/docs/. The frontend is a
+    CLIENT of the backend, not a special case inside it.
+    """
+
+    template_name = "dashboard.html"
 
 
 class SpecialistList(APIView):

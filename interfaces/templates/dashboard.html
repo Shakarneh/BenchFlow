@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>benchFlow — resourcing dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1117; --panel: #171a23; --line: #262a36;
+      --text: #e6e8ee; --dim: #8b90a0;
+      --ok: #3ddc84; --bad: #ff6b6b; --accent: #6c8cff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 2rem 1.5rem; background: var(--bg); color: var(--text);
+      font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; }
+    h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
+    .sub { color: var(--dim); margin-bottom: 2rem; }
+    .sub a { color: var(--accent); }
+
+    .card {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: 1rem;
+    }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .client { font-weight: 600; font-size: 1.05rem; }
+    .meta { color: var(--dim); font-size: .88rem; }
+    .tag {
+      display: inline-block; background: #21263a; border: 1px solid var(--line);
+      border-radius: 999px; padding: .1rem .6rem; font-size: .8rem; margin-right: .3rem;
+    }
+    button {
+      background: var(--accent); color: #0b0d13; border: 0; border-radius: 7px;
+      padding: .5rem 1.1rem; font-weight: 600; font-size: .9rem; cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: default; }
+
+    .result { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+    .verdict { font-weight: 600; margin-bottom: .6rem; }
+    .staffed { color: var(--ok); }
+    .short { color: var(--bad); }
+    .person { padding: .35rem 0; border-bottom: 1px dashed var(--line); }
+    .person:last-child { border: 0; }
+    .name { font-weight: 600; }
+    .rate { color: var(--dim); }
+    .why { color: var(--bad); font-size: .85rem; }
+    .muted { color: var(--dim); font-size: .85rem; margin-top: .8rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>benchFlow</h1>
+  <p class="sub">
+    Open client requests. Press <strong>Propose</strong> to run the Hungarian matcher —
+    it answers who to place, and why everyone else was rejected.
+    <a href="/api/docs/">API docs</a> · <a href="/admin/">admin</a>
+  </p>
+
+  <div id="requests">Loading…</div>
+</div>
+
+<script>
+// Plain fetch() against the same API documented at /api/docs/. No build step,
+// no framework -- the point of this page is to SEE the matcher work.
+
+const money = n => Number(n).toFixed(2);
+
+async function loadRequests() {
+  const box = document.getElementById("requests");
+  const res = await fetch("/api/requests/");
+  if (res.status === 403) {
+    box.innerHTML = `<div class="card">Please <a href="/admin/">log in</a> first — the API requires it.</div>`;
+    return;
+  }
+  const requests = await res.json();
+  box.innerHTML = requests.map(renderRequest).join("");
+}
+
+function renderRequest(r) {
+  const skills = r.required_skills
+    .map(s => `<span class="tag">${s.skill} · ${s.level}</span>`).join("");
+  return `
+    <div class="card" id="req-${r.id}">
+      <div class="row">
+        <div>
+          <div class="client">${r.client_name}</div>
+          <div class="meta">
+            needs ${r.headcount} × ${Math.round(r.fraction * 100)}% ·
+            ${r.starts_on} → ${r.ends_on} · budget ${money(r.max_bill_rate)}/h
+          </div>
+          <div style="margin-top:.5rem">${skills}</div>
+        </div>
+        <button onclick="propose(${r.id}, this)">Propose</button>
+      </div>
+      <div class="result" id="result-${r.id}" hidden></div>
+    </div>`;
+}
+
+async function propose(id, button) {
+  button.disabled = true;
+  button.textContent = "Matching…";
+
+  // POST, not GET: this asks the system to DO something.
+  const res = await fetch(`/api/requests/${id}/propose/`, {
+    method: "POST",
+    headers: { "X-CSRFToken": getCookie("csrftoken") },
+  });
+
+  button.disabled = false;
+  button.textContent = "Propose";
+
+  const box = document.getElementById(`result-${id}`);
+  box.hidden = false;
+
+  if (res.status === 403) {
+    box.innerHTML = `<div class="why">Only account managers may propose candidates.</div>`;
+    return;
+  }
+  box.innerHTML = renderResult(await res.json());
+}
+
+function renderResult(data) {
+  const verdict = data.is_fully_staffed
+    ? `<div class="verdict staffed">✓ Fully staffed</div>`
+    : `<div class="verdict short">✗ Short by ${data.shortfall}</div>`;
+
+  const proposed = data.proposed.length
+    ? data.proposed.map(p => `
+        <div class="person">
+          <span class="name">${p.full_name}</span>
+          <span class="rate">— ${money(p.cost_rate)}/h · free from ${p.available_from}</span>
+        </div>`).join("")
+    : `<div class="muted">Nobody could be proposed.</div>`;
+
+  const rejected = data.rejected.map(r => `
+    <div class="person">
+      <span class="name">${r.full_name}</span>
+      <div class="why">${r.reasons.join(" · ")}</div>
+    </div>`).join("");
+
+  return `
+    ${verdict}
+    ${proposed}
+    ${rejected ? `<div class="muted">Not proposed:</div>${rejected}` : ""}
+    <div class="muted">${data.cached ? "served from cache" : "freshly computed"}</div>`;
+}
+
+// Django requires this token on POST -- it proves the request came from this
+// page and not from another site (CSRF protection).
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : "";
+}
+
+loadRequests();
+</script>
+</body>
+</html>
