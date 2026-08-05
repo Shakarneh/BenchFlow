@@ -437,7 +437,17 @@ A phase is done when **all** of these are true:
 
 **Deadline:** the project must be finished and understood by **13 Aug 2026** (15 days from 29 Jul).
 
-**Where we are:** Phases 0–12 **done.** **638 tests passing.** Money engine live:
+**Where we are:** Phases 0–13 **done.** **643 tests passing.** Caching & async live:
+**Redis runs in Docker** (`docker run -d --name benchflow-redis -p 6379:6379 redis:7-alpine`) —
+Docker Desktop must be running, and WSL2 had to be installed first (`wsl --install`, admin, reboot).
+Redis db 1 = cache, db 2 = Celery queue. Cache invalidation is **version-based**:
+`infrastructure/cache.py` bakes a version number into every key, `infrastructure/signals.py` bumps
+it on any save/delete of a matching-relevant model, so stale answers become unreachable in one step.
+`POST /requests/<id>/propose/` now returns a `"cached"` flag. Celery worker (Windows needs
+`--pool=solo`): `celery -A config worker --loglevel=info --pool=solo`. Tasks in
+`infrastructure/tasks.py`. Phase 13 work is on `feat/phase-13-caching-async`.
+
+**Earlier (still true):** Money engine:
 `domain/engagement.py` (`margin()`, `margin_ratio()`, explicit `ROUND_HALF_UP` — Python's default
 banker's rounding is pinned against by a test) and `infrastructure/placements.py` (`place()` does
 check-and-book inside ONE `@transaction.atomic` with `select_for_update()` row locking, so two
@@ -536,11 +546,12 @@ Grand Walkthrough of the whole codebase.
 **Stack decided:** Python **3.13** + Django **5.2 LTS**. All 22 phases are being attempted — nothing
 was cut (Decision 10). Pace is high: keep Concept Cards short, no detours.
 
-**The immediate next step:** **Phase 13 — Caching & async.** Redis + Celery: cache match results,
-recompute forecasts in the background, SLA breach alerts riding on the Phase 8 `EventBus`.
-⚠️ **This is one of the two heavy phases left** (the other is Phase 17 Docker). Redis on Windows
-is awkward natively — strongly consider running Redis via Docker here and letting that double as
-the Phase 17 warm-up, or use `django-redis` with a local Memurai/WSL Redis.
+**The immediate next step:** **Phase 14 — errors & logging**, then 15 (security), 16 (ruff/black/
+mypy). These three are light and can move fast. **Phase 17 (Docker compose)** is now half-done —
+Docker Desktop is installed and Redis already runs as a container; what remains is a Dockerfile
+for the app plus a `docker-compose.yml` tying web + db + redis + worker together.
+⚠️ **7 days left, 8 phases.** Phases 19 (deployment) and 20 (frontend) are the realistic
+candidates to trim if time runs short — decide by ~10 Aug.
 **Useful commands:** `python manage.py seed_demo` · `python manage.py benchmark_matchers` ·
 `lint-imports` · `/admin/` · `/api/docs/`.
 
@@ -551,6 +562,7 @@ on a *copy* of each specialist; `Specialist.is_free_for()` is rule 3 of four in
 
 | Date | Phase | What was done | Concepts learned | Commits/PRs |
 |---|---|---|---|---|
+| 5 Aug 2026 | 13 | **Phase 13 done.** Installed Docker Desktop (WSL2 first — needed admin + reboot) and ran **Redis as a container**, which doubles as the Phase 17 warm-up. Django cache → Redis via `django-redis`; the propose endpoint now returns a `"cached"` flag, proven live false→true in the browser. **Version-based cache invalidation**: every key carries a data version, and `post_save`/`post_delete` signals bump it, so one increment orphans every stale answer. Celery wired (`config/celery.py`), worker run with `--pool=solo`, and `fill_all_requests_task.delay()` executed in a separate process — visible in the worker log. 5 caching tests incl. one proving a too-expensive specialist is never served from cache | **containers** (a sealed Linux box; nothing installed into Windows) · WSL2 · **caching** & TTL · **cache invalidation** — the hard half, solved with a version key rather than hunting individual entries · **Django signals** so nobody can forget to invalidate · **task queues** & brokers · `.delay()` vs calling a function · **idempotent tasks** · why a web request must not do slow work | 2 commits |
 | 5 Aug 2026 | 12 | **Phase 12 done.** `Engagement` (frozen) with `margin()` and `margin_ratio()`, both `quantize(..., ROUND_HALF_UP)` — Mohammed typed both. Invariants raise at construction, not at report time. Then the concurrency half: `PlacementModel` + `place()` — `@transaction.atomic` wrapping `select_for_update()` (Mohammed typed the lock), so check-and-book is indivisible. Tests prove a refused placement rolls back with no orphan allocation, and that raising a specialist's rate later cannot rewrite a signed placement's margin | **`Decimal` rounding modes** — Python defaults to **banker's rounding**, finance wants half-up (pinned by a test on `0.03125`) · invariants enforced at construction · **race conditions** — the bug lives in the gap between check and write, not in any single line · **row locking** (`select_for_update`) · **atomic transactions** rolling back partial work · rate **snapshots** vs live lookups | 2 commits |
 | 4 Aug 2026 | 11 | **Phase 11 done.** Locked the whole API with `IsAuthenticated` as the DRF default (deny by default). Proved the lock live: 403 in incognito, 4 tests went red, then taught the tests to log in (`force_authenticate` fixtures). AuthZ via Django Groups: `IsAccountManager` permission on the propose endpoint — recruiters browse, only managers act. Demo users in `seed_demo`. JWT skipped in writing. Learned `git stash drop` after a stash was left un-popped | **authN vs authZ** (same 403, two different failures — his gate answer nailed it) · deny-by-default · **sessions** & signed cookies (the SECRET_KEY story pays off) · DRF permission classes · Django Groups as roles · `force_authenticate` in tests · why breaking your own tests can be the proof the feature works | 3 commits |
 | 4 Aug 2026 | 10 | **Phase 10 done.** DRF installed; `interfaces/` filled: serializers translate domain objects → JSON, thin views call repositories/use cases, urls under `/api/`. The star: `POST /api/requests/<id>/propose/` returns the Hungarian matcher's answer with rejected-with-reasons over HTTP. Swagger via drf-spectacular at `/api/docs/`. 4 API tests with `pytest-django` (throwaway test db). Learned `git stash` for real mid-flow | **what an API is** (addresses returning data) · serializers · **HTTP status codes seen live**: 200 · 404 · **405** (GET vs POST — reading vs doing) · browsable API · **OpenAPI/Swagger** (schema = machine menu, docs = human page) · thin views (no business rules in the web layer) · `git stash` / `git restore --staged` | 5 commits |

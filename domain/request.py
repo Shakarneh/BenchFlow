@@ -29,6 +29,10 @@ class Request:
     ends_on: date
     max_bill_rate: Decimal
     fraction: Decimal = FULL_CAPACITY
+    # Where this came from in storage. None for requests built in memory
+    # (tests, planning). The domain never uses it -- it is a handle for the
+    # outside world, so the API can build a URL back to this request.
+    id: int | None = None
 
     def specification(self) -> Specification:
         """The four rules a candidate must satisfy, as one composed object.

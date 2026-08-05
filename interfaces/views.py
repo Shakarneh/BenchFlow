@@ -4,6 +4,7 @@ Views stay thin on purpose: load through the repositories, hand to a
 serializer, return. No business rules live here -- those are in domain/.
 """
 
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from rest_framework.views import APIView
 
 from interfaces.permissions import IsAccountManager
 
+from infrastructure.cache import TTL_SECONDS, proposal_key
 from infrastructure.container import propose_candidates
 from infrastructure.models import RequestModel
 from infrastructure.repositories import (
@@ -49,8 +51,15 @@ class ProposeCandidates(APIView):
 
     def post(self, request, pk):
         row = get_object_or_404(RequestModel, pk=pk)
+
+        # Cache hit? Hand back the stored answer without running the matcher.
+        key = proposal_key(pk)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response({**cached, "cached": True})
+
         proposal = propose_candidates()(request_to_domain(row))
-        return Response({
+        payload = {
             "client_name": proposal.request.client_name,
             "is_fully_staffed": proposal.is_fully_staffed,
             "shortfall": proposal.shortfall,
@@ -59,4 +68,6 @@ class ProposeCandidates(APIView):
                 {"full_name": person.full_name, "reasons": reasons}
                 for person, reasons in proposal.rejected
             ],
-        })
+        }
+        cache.set(key, payload, TTL_SECONDS)
+        return Response({**payload, "cached": False})

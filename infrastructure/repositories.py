@@ -60,6 +60,7 @@ def request_to_domain(row: RequestModel) -> Request:
         ends_on=row.ends_on,
         max_bill_rate=row.max_bill_rate,
         fraction=row.fraction,
+        id=row.pk,
     )
 
 
