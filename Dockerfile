@@ -22,6 +22,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # --- source layer (changes constantly) ---
 COPY . .
 
+# Gather static files into STATIC_ROOT so WhiteNoise can serve them.
+# Done at BUILD time, not start time -- every container boot would repeat it.
+RUN DJANGO_SECRET_KEY=build-only POSTGRES_DB=x POSTGRES_USER=x \
+    POSTGRES_PASSWORD=x POSTGRES_HOST=x POSTGRES_PORT=5432 \
+    python manage.py collectstatic --noinput
+
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# gunicorn, not runserver. Django's dev server is single-process, unencrypted
+# and explicitly "do not use in production". gunicorn runs several worker
+# processes and is built to face the internet.
+#
+# $PORT because hosting platforms choose the port and tell you via that
+# variable; the default keeps docker-compose working unchanged.
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]

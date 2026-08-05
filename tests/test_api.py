@@ -64,6 +64,14 @@ def make_world():
 
 
 @pytest.mark.django_db
+def test_health_check_is_open_and_reports_the_database():
+    """No login required -- the hosting platform pings this and has no account."""
+    response = APIClient().get("/api/health/")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "database": "ok"}
+
+
+@pytest.mark.django_db
 def test_anonymous_visitors_are_locked_out():
     """No login -> 403. This is the whole point of Phase 11."""
     make_world()
