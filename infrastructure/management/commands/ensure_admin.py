@@ -27,9 +27,7 @@ class Command(BaseCommand):
             self.stdout.write("DJANGO_SUPERUSER_USERNAME/PASSWORD not set -- skipping.")
             return
 
-        user, created = User.objects.get_or_create(
-            username=username, defaults={"email": email}
-        )
+        user, created = User.objects.get_or_create(username=username, defaults={"email": email})
         # set_password HASHES it. Assigning user.password directly would store
         # the raw text and make every login fail.
         user.set_password(password)
@@ -38,7 +36,5 @@ class Command(BaseCommand):
         user.save()
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"admin '{username}' {'created' if created else 'password reset'}"
-            )
+            self.style.SUCCESS(f"admin '{username}' {'created' if created else 'password reset'}")
         )

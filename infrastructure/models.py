@@ -37,6 +37,10 @@ class SkillModel(models.Model):
     class Meta:
         db_table = "skill"
         ordering = ["name"]
+        # Without this the admin calls the class by its Python name and shows
+        # "Skill models". These names are what a manager reads, not a coder.
+        verbose_name = "skill"
+        verbose_name_plural = "skills"
 
     def __str__(self):
         return self.name
@@ -52,6 +56,8 @@ class SpecialistModel(models.Model):
     class Meta:
         db_table = "specialist"
         ordering = ["full_name"]
+        verbose_name = "specialist"
+        verbose_name_plural = "specialists"
 
     def __str__(self):
         return self.full_name
@@ -71,6 +77,8 @@ class SpecialistSkillModel(models.Model):
 
     class Meta:
         db_table = "specialist_skill"
+        verbose_name = "skill"
+        verbose_name_plural = "skills"
         constraints = [
             models.UniqueConstraint(
                 fields=["specialist", "skill"], name="one_level_per_skill_per_specialist"
@@ -99,6 +107,8 @@ class RequestModel(models.Model):
     class Meta:
         db_table = "request"
         ordering = ["starts_on"]
+        verbose_name = "request"
+        verbose_name_plural = "requests"
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(ends_on__gte=models.F("starts_on")),
@@ -139,6 +149,8 @@ class AllocationModel(models.Model):
     class Meta:
         db_table = "allocation"
         ordering = ["starts_on"]
+        verbose_name = "booking"
+        verbose_name_plural = "bookings"
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(ends_on__gte=models.F("starts_on")),
@@ -176,6 +188,8 @@ class PlacementModel(models.Model):
     class Meta:
         db_table = "placement"
         ordering = ["-created_at"]
+        verbose_name = "placement"
+        verbose_name_plural = "placements"
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(cost_rate__gt=0) & models.Q(bill_rate__gt=0),
@@ -196,6 +210,8 @@ class RequestRequirementModel(models.Model):
 
     class Meta:
         db_table = "request_requirement"
+        verbose_name = "required skill"
+        verbose_name_plural = "required skills"
         constraints = [
             models.UniqueConstraint(
                 fields=["request", "skill"], name="one_level_per_skill_per_request"

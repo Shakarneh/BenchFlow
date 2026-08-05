@@ -251,6 +251,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Our own CSS lives here, outside any app, because it belongs to the product
+# as a whole rather than to one Django app. collectstatic picks it up along
+# with the admin's own files.
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
 # Where `collectstatic` gathers every app's static files for WhiteNoise.
 STATIC_ROOT = BASE_DIR / "staticfiles"
 

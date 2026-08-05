@@ -1,0 +1,455 @@
+/* ============================================================================
+   benchFlow — design system
+   ----------------------------------------------------------------------------
+   One stylesheet, shared by every page (dashboard + Django admin). Hand
+   written on purpose: a single-page frontend does not need React, npm or a
+   build step, and adding one would slow the Docker image and CI for nothing.
+
+   The palette is warm and paper-like: bone, sand and ink, with a single
+   cognac accent. Colour is used sparingly, so when something IS coloured it
+   means something — green = proposed, clay = rejected.
+   ========================================================================= */
+
+/* ── 1. Tokens ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surfaces — warm neutrals, all in the same 35–40° hue family */
+  --paper:          #f3efe7;
+  --paper-sunk:     #ece6da;
+  --surface:        #fcfaf6;
+  --surface-raised: #ffffff;
+
+  /* Ink */
+  --ink:            #1a1815;
+  --ink-muted:      #6e6557;
+  --ink-faint:      #9a9182;
+
+  /* Lines — hairlines, never heavy borders */
+  --line:           #e4dccc;
+  --line-strong:    #d2c7b2;
+
+  /* Accent: cognac. Links, focus rings, quiet highlights. */
+  --accent:         #8a5a34;
+  --accent-deep:    #6f4527;
+  --accent-wash:    #f3e7da;
+
+  /* Semantics */
+  --good:           #4c6a4e;
+  --good-wash:      #e7eee2;
+  --bad:            #9c3f2c;
+  --bad-wash:       #f7e6e0;
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-ui:      "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Space & shape */
+  --radius:    8px;
+  --radius-sm: 6px;
+  --shell:     1080px;
+
+  /* Shadows are warm-tinted, never grey — grey shadows on paper look dirty */
+  --shadow-sm: 0 1px 2px rgba(60, 44, 24, 0.05);
+  --shadow-md: 0 1px 2px rgba(60, 44, 24, 0.05), 0 10px 30px -18px rgba(60, 44, 24, 0.35);
+
+  --ease: cubic-bezier(0.2, 0.6, 0.25, 1);
+}
+
+/* ── 2. Reset ────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15.5px;
+  line-height: 1.6;
+  font-feature-settings: "kern", "liga", "cv05";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* A whisper of paper grain. Fixed, unclickable, almost invisible — it stops
+   large flat areas looking like a screenshot of a template. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+body > * { position: relative; z-index: 1; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-deep); }
+
+/* A class like .stats{display:flex} beats the browser's own rule for the
+   hidden attribute, so an element marked hidden would still show. This puts
+   that back the way everyone expects. */
+[hidden] { display: none !important; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ── 3. Typography ───────────────────────────────────────────────────────── */
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 0;
+  font-variation-settings: "SOFT" 0, "WONK" 0;
+}
+
+h1 { font-size: clamp(1.9rem, 1.3rem + 2vw, 2.6rem); }
+h2 { font-size: 1.3rem; }
+
+/* The small-caps micro-label. Used for every field name in the UI, which is
+   what makes the layout read like a document rather than a form. */
+.eyebrow,
+.label {
+  font-size: 0.685rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 clamp(1.1rem, 4vw, 2rem);
+}
+
+/* ── 4. Masthead ─────────────────────────────────────────────────────────── */
+
+.masthead {
+  background: rgba(252, 250, 246, 0.82);
+  backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.masthead__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 66px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62rem;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.16rem;
+  letter-spacing: -0.02em;
+}
+
+.wordmark:hover { color: var(--ink); }
+.wordmark em { font-style: italic; color: var(--accent); }
+
+.wordmark__mark {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  background: var(--ink);
+  color: var(--paper);
+  flex: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  font-size: 0.83rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nav a { color: var(--ink-muted); }
+.nav a:hover { color: var(--ink); }
+
+/* ── 5. Lede ─────────────────────────────────────────────────────────────── */
+
+.lede { padding: clamp(2.6rem, 6vw, 4.2rem) 0 1.9rem; max-width: 62ch; }
+.lede .eyebrow { display: block; margin-bottom: 0.85rem; }
+.lede h1 { margin-bottom: 0.75rem; }
+.lede__text { color: var(--ink-muted); margin: 0; font-size: 1.02rem; }
+
+/* Three figures, separated by rules — a masthead statistic strip. */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2.4rem;
+  margin: 2.2rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.stats div { display: flex; flex-direction: column-reverse; gap: 0.2rem; }
+.stats dt { margin: 0; }
+.stats dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 6. Request card ─────────────────────────────────────────────────────── */
+
+.stack { padding-bottom: 4rem; display: grid; gap: 1.05rem; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+  animation: rise 0.5s var(--ease) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.card:hover { box-shadow: var(--shadow-md); border-color: var(--line-strong); }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.35rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.client {
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.9rem;
+}
+
+/* The ruled specification grid: HEADCOUNT | WINDOW | BUDGET */
+.spec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.4rem;
+  margin: 0 0 1rem;
+}
+
+.spec > div { display: grid; gap: 0.1rem; }
+.spec .label { line-height: 1.4; }
+.spec .value { font-size: 0.94rem; color: var(--ink); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.38rem;
+  padding: 0.24rem 0.62rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--paper-sunk);
+  font-size: 0.815rem;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.chip b { color: var(--ink); font-weight: 600; }
+.chip--level { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+
+/* ── 7. Buttons ──────────────────────────────────────────────────────────── */
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: inherit;
+  font-size: 0.87rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.58rem 1.25rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex: none;
+  transition: transform 0.18s var(--ease), background 0.18s var(--ease),
+              box-shadow 0.18s var(--ease), opacity 0.18s var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  background: #2c2822;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -8px rgba(26, 24, 21, 0.55);
+}
+
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+/* ── 8. Result panel ─────────────────────────────────────────────────────── */
+
+.result {
+  border-top: 1px solid var(--line);
+  background: var(--surface-raised);
+  padding: 1.3rem 1.5rem 1.45rem;
+  animation: unfold 0.35s var(--ease);
+}
+
+@keyframes unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.verdict--ok    { background: var(--good-wash); color: var(--good); }
+.verdict--short { background: var(--bad-wash);  color: var(--bad); }
+
+.group + .group { margin-top: 1.4rem; }
+.group > .label { display: block; margin-bottom: 0.55rem; }
+
+.person {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.62rem 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.person:last-child { border-bottom: 0; padding-bottom: 0; }
+.person__name { font-weight: 600; }
+.person__meta { color: var(--ink-muted); font-size: 0.87rem; }
+
+/* A proposed person gets a cognac rule on the left — the only place in the
+   page where a person is marked as chosen. */
+.person--in {
+  border-left: 2px solid var(--accent);
+  margin-left: -1.5rem;
+  padding-left: calc(1.5rem - 2px);
+}
+
+.reasons { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.28rem; }
+
+.reason {
+  font-size: 0.78rem;
+  color: var(--bad);
+  background: var(--bad-wash);
+  border-radius: 4px;
+  padding: 0.1rem 0.45rem;
+}
+
+.note {
+  margin-top: 1.3rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.empty { color: var(--ink-muted); font-size: 0.92rem; margin: 0; }
+
+/* ── 9. Skeleton loading ─────────────────────────────────────────────────── */
+
+/* Shown while the browser waits for the API. A shape that matches the real
+   card feels faster than the word "Loading…", even at the same speed. */
+.skeleton { padding: 1.35rem 1.5rem; }
+
+.bone {
+  height: 11px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--paper-sunk) 25%, #f6f1e7 50%, var(--paper-sunk) 75%);
+  background-size: 220% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+.bone + .bone { margin-top: 0.7rem; }
+.bone--title { height: 19px; width: 34%; margin-bottom: 1.1rem; }
+.bone--wide  { width: 72%; }
+.bone--half  { width: 48%; }
+
+@keyframes shimmer {
+  from { background-position: 120% 0; }
+  to   { background-position: -120% 0; }
+}
+
+/* ── 10. Footer ──────────────────────────────────────────────────────────── */
+
+.footer {
+  border-top: 1px solid var(--line);
+  padding-top: 1.6rem;
+  padding-bottom: 3rem;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── 11. Small screens ───────────────────────────────────────────────────── */
+
+@media (max-width: 620px) {
+  .card__head { gap: 1.1rem; }
+  .btn { width: 100%; }
+  .stats { gap: 1.2rem 2rem; }
+  .person--in { margin-left: 0; padding-left: 0.7rem; }
+}
+
+/* Some people get motion sick, and some just switch it off. Respect it. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
