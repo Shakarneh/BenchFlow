@@ -1,98 +1,21 @@
+<div align="center">
+
 # benchFlow
 
 **A resourcing and allocation platform for IT service companies.**
 
-An IT outstaffing company employs engineers. Clients send requests — *"two senior Python developers
-for six months, starting in three weeks, at most X per hour."* Someone has to decide who goes where,
-without over-committing anyone, fast. Engineers who aren't assigned sit on **the bench**, costing
-money every day.
+*Who do we place on which client request — optimally, without over-committing anyone?*
 
-benchFlow is the engine behind that decision. At its centre is a real optimisation problem — the
-**assignment problem** — not a set of CRUD forms.
+[![CI](https://github.com/Shakarneh/BenchFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakarneh/BenchFlow/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.13-1a1815)
+![Django](https://img.shields.io/badge/Django-5.2%20LTS-1a1815)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-1a1815)
+![Tests](https://img.shields.io/badge/tests-649%20passing-4c6a4e)
 
-> ✅ **Status: live.** Phases 0–20 of 21 complete · **649 tests passing** · CI green.
-> Phase 21 (documentation & showcase) is in progress.
->
-> 🌍 **[benchflow-qfzq.onrender.com](https://benchflow-qfzq.onrender.com)** — dashboard `/` ·
-> API docs `/api/docs/` · admin `/admin/`
-> *(free tier: the first visit takes ~50s while the instance wakes up)*
->
-> See [`CLAUDE.md`](CLAUDE.md) for the full plan and progress log.
+**🌍 [benchflow-qfzq.onrender.com](https://benchflow-qfzq.onrender.com)** ·
+[API docs](https://benchflow-qfzq.onrender.com/api/docs/) ·
+[Admin](https://benchflow-qfzq.onrender.com/admin/)
 
----
+<sub>Free hosting tier — the first request takes ~50s while the instance wakes up.</sub>
 
-## What makes it interesting
-
-| Problem | Why it's hard |
-|---|---|
-| **Matching engine** | N specialists × M requests under skill, level, date and rate constraints — the assignment problem |
-| **Fractional allocation** | Someone can be 50% on project A and 50% on B. Overlapping intervals with capacity |
-| **Skill graph** | "Django ⇒ Python" — implications resolved by graph traversal before matching |
-| **Pipeline state machine** | Guarded transitions from request to placement, with an audit trail |
-| **Rate & margin engine** | `Decimal` money, cost vs bill, margin by placement, client and period |
-
----
-
-## Architecture
-
-Four layers, and one rule: **dependencies point inward.**
-
-```
-interfaces/       DRF views, serializers, URLs.  Speaks HTTP. Knows no business rules.
-    ↓
-application/      Use cases: "propose candidates for request 42". No HTTP, no SQL.
-    ↓
-domain/           Pure Python. Entities, rules, algorithms. Zero Django imports.
-    ↑
-infrastructure/   Django ORM, Redis, Celery. Implements interfaces declared in domain/.
-```
-
-`domain/` depends on nothing — which is why the matching engine can be tested in milliseconds
-without a database, and why the framework is a replaceable detail.
-
----
-
-## Stack
-
-Python 3.13 · Django 5.2 LTS · Django REST Framework · PostgreSQL · Redis · Celery ·
-pytest · Docker · GitHub Actions
-
----
-
-## Running it locally
-
-```bash
-git clone https://github.com/Shakarneh/benchFlow.git
-cd benchFlow
-```
-
-```bash
-py -3.13 -m venv .venv
-source .venv/Scripts/activate      # Windows (Git Bash)
-# source .venv/bin/activate        # macOS / Linux
-```
-
-```bash
-pip install -r requirements.txt
-```
-
-```bash
-python manage.py runserver
-```
-
-Run the tests:
-
-```bash
-pytest
-```
-
----
-
-## Why this project exists
-
-Two reasons, both deliberate. To learn backend engineering properly — architecture, algorithms and
-testing, not framework tutorials. And because it models the actual business of
-**Expert Choice CIS**, whose homepage promises a three-day average time to place a specialist.
-This is the system behind that promise.
-
-**Author:** Mohammed M.Y. Shakarneh
+</div>
