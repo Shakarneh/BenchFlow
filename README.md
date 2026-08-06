@@ -19,3 +19,19 @@
 <sub>Free hosting tier — the first request takes ~50s while the instance wakes up.</sub>
 
 </div>
+
+---
+
+## The problem
+
+An IT outstaffing company employs engineers. Clients send requests — *"two senior Python
+developers for six months, starting in three weeks, at most €70/hour."* Someone must decide who
+goes where, without over-committing anyone, fast. Engineers who aren't assigned sit on **the
+bench**, costing money every day they're idle.
+
+Doing this by hand is a spreadsheet and a good memory. Doing it correctly is an optimisation
+problem: **N specialists × M requests**, each with skill, seniority, date and rate constraints,
+where filling one request well may strand another.
+
+benchFlow is the engine behind that decision. At its centre is the **assignment problem**, solved
+with the Hungarian algorithm — not a set of CRUD forms.
