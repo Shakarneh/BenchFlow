@@ -153,3 +153,54 @@ look, only managers may act.
 `POST`, not `GET`, on `propose/`: reading is a `GET`, asking the system to *do* something is a
 `POST`. Domain rule violations return **409 Conflict**, not 500 — a refused placement is a
 disagreement about the rules, not a crash.
+
+---
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Language | Python 3.13 |
+| Web | Django 5.2 LTS · Django REST Framework · drf-spectacular |
+| Data | PostgreSQL 17 · Redis (cache with version-keyed invalidation) |
+| Async | Celery worker |
+| Quality | pytest · ruff · black · mypy · import-linter |
+| Ops | Docker · docker-compose · GitHub Actions · Render |
+
+---
+
+## Running it
+
+**Everything, in one command** — web, PostgreSQL, Redis and the Celery worker:
+
+```bash
+docker compose up
+```
+
+Then open <http://localhost:8000>. Migrations run and demo data seeds automatically.
+
+**Or locally**, against your own PostgreSQL:
+
+```bash
+python -m venv .venv && source .venv/Scripts/activate
+```
+
+```bash
+pip install -r requirements.txt
+```
+
+```bash
+python manage.py migrate && python manage.py seed_demo
+```
+
+```bash
+python manage.py runserver
+```
+
+Demo logins created by `seed_demo`: `manager` and `recruiter`, password `demo1234`.
+
+To reproduce the benchmark table above:
+
+```bash
+python manage.py benchmark_matchers
+```
