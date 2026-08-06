@@ -35,3 +35,16 @@ where filling one request well may strand another.
 
 benchFlow is the engine behind that decision. At its centre is the **assignment problem**, solved
 with the Hungarian algorithm — not a set of CRUD forms.
+
+---
+
+## What makes it hard
+
+| Problem | Why it isn't trivial |
+|---|---|
+| **Matching engine** | N × M under skill, level, date and rate constraints — the assignment problem |
+| **Fractional allocation** | Someone can be 50% on project A and 50% on B. Overlapping intervals with capacity |
+| **Skill graph** | "Django ⇒ Python" — implications resolved by graph traversal *before* matching |
+| **Pipeline state machine** | Guarded transitions from request to placement, with an append-only audit trail |
+| **Rate & margin engine** | `Decimal` money, cost vs bill, rounding that finance agrees with |
+| **Concurrency** | Two managers must not book the same person into the same week |
