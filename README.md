@@ -83,3 +83,53 @@ Trusting an algorithm nobody in this repo derived is its own problem, so it is v
 optimum exactly, plus 300 more asserting invariants.
 
 📄 Full write-up: [`docs/matching.md`](docs/matching.md)
+
+---
+
+## Architecture
+
+Four layers, one rule: **dependencies point inward.**
+
+```
+interfaces/       DRF views, serializers, URLs. Speaks HTTP. Knows no business rules.
+    ↓
+application/      Use cases: "propose candidates for request 42". No HTTP, no SQL.
+    ↓
+domain/           Pure Python. Entities, rules, algorithms. Zero Django imports.
+    ↑
+infrastructure/   Django ORM, Redis, Celery. Implements interfaces declared in domain/.
+```
+
+`domain/` imports nothing but the standard library. That is why the matching engine is unit-tested
+in milliseconds with no database, and why Django is a replaceable detail rather than the
+foundation.
+
+**The trick that makes it work:** `application/` never imports `infrastructure/`. `domain/`
+declares an interface — *"something that can list all specialists"* (a **port**).
+`infrastructure/` writes the real Django-ORM version (an **adapter**). At startup the real one is
+handed in (`infrastructure/container.py`, the composition root). Tests hand in a four-line fake
+instead, and the same code runs with no database at all.
+
+**This is enforced by a machine, not by discipline.** [`import-linter`](.importlinter) runs in CI
+with three contracts. An `import django` added to `domain/` turns the build red, naming the file
+and line. We proved it by deliberately breaking it once.
+
+📄 Decision records: [`docs/decisions.md`](docs/decisions.md)
+
+---
+
+## Design patterns in use
+
+| Pattern | Where | What it bought |
+|---|---|---|
+| **Strategy** | `domain/matcher.py` | Swapping greedy → Hungarian changed zero calling code |
+| **Repository** | `domain/repositories.py` + infra adapters | The matcher runs on PostgreSQL without importing it |
+| **Specification** | `domain/specifications.py` | Rejections explain themselves in plain English |
+| **State** | `domain/pipeline.py` | Illegal transitions raise; append-only audit trail |
+| **Observer** | `domain/events.py` | The pipeline announces; SLA, audit and email subscribe |
+| ~~Factory~~ | — | **Rejected in writing** — `@dataclass` plus repository mappers already cover it |
+
+The last row matters as much as the others: a pattern that was considered, judged unnecessary, and
+documented as rejected.
+
+📄 Full write-up: [`docs/patterns.md`](docs/patterns.md)
