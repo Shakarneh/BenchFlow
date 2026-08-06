@@ -204,3 +204,91 @@ To reproduce the benchmark table above:
 ```bash
 python manage.py benchmark_matchers
 ```
+
+---
+
+## Tests and quality gates
+
+```bash
+pytest
+```
+
+**649 tests.** Five gates run on every push and pull request, against real PostgreSQL and Redis
+service containers, plus a separate job that builds the Docker image:
+
+| Gate | Command |
+|---|---|
+| Lint | `ruff check .` |
+| Format | `black --check .` |
+| Types | `mypy domain application` |
+| Architecture | `lint-imports` |
+| Tests | `pytest` |
+
+The domain layer is covered 100%. The suite includes seeded randomised testing, boundary tests one
+day apart on inclusive date ranges, and a test pinning `ROUND_HALF_UP` because Python's default is
+banker's rounding and finance disagrees.
+
+---
+
+## Deployment
+
+Defined as code in [`render.yaml`](render.yaml) — web service (Docker) plus managed PostgreSQL and
+Redis. Merging to `main` deploys automatically; that is the CD half of CI/CD.
+
+Production specifics: **gunicorn** rather than the dev server, **WhiteNoise** for static files,
+`DATABASE_URL` via `dj-database-url`, a real health check, and HSTS plus secure cookies that switch
+on automatically when `DEBUG=False` — which itself defaults to **off**, so a forgotten environment
+variable fails safe rather than leaking tracebacks.
+
+📄 Security review (OWASP Top 10 and personal-data handling): [`docs/security.md`](docs/security.md)
+
+---
+
+## How this was built
+
+benchFlow was written with AI assistance, deliberately and with a method — not by prompting until
+something ran.
+
+[`CLAUDE.md`](CLAUDE.md) is a **specification the AI is bound to**: the domain, the architecture,
+the 21-phase plan, the conventions, and the working rules — including *"never write code before
+explaining it"* and *"the human runs every Git command."* [`WORKFLOW.md`](WORKFLOW.md) holds the
+same thing as diagrams.
+
+The rule that keeps it honest: **before any commit, I explain the code back in my own words.** If I
+can't, it isn't committed and we go again. The AI wrote most of the code; I typed the business
+rules and the algorithm cores — the objective function, the sweep-line, the row lock, the BFS
+loop. Every phase, every decision and every mistake is logged in `CLAUDE.md` §9.
+
+That file is why this repository can be defended line by line rather than merely shown.
+
+---
+
+## Documentation
+
+| Document | What's in it |
+|---|---|
+| [`docs/matching.md`](docs/matching.md) | The assignment problem, the three matchers, benchmarks, oracle testing |
+| [`docs/patterns.md`](docs/patterns.md) | Five design patterns, before and after, plus one rejected |
+| [`docs/decisions.md`](docs/decisions.md) | Architecture decision records |
+| [`docs/security.md`](docs/security.md) | OWASP Top 10 review and personal-data handling |
+| [`CLAUDE.md`](CLAUDE.md) | The project bible: plan, conventions, full progress log |
+| [`WORKFLOW.md`](WORKFLOW.md) | The same, as diagrams |
+
+---
+
+## Why it exists
+
+Two reasons, both deliberate.
+
+To learn backend engineering properly — architecture, algorithms, testing and operations, rather
+than framework tutorials.
+
+And because it models the actual business of **Expert Choice CIS**, an IT outstaffing company whose
+homepage promises a three-day average time to place a specialist. This is the system behind that
+promise.
+
+---
+
+**Author:** Mohammed M.Y. Shakarneh ·
+[Portfolio](https://mohammedshakarneh.com) ·
+[GitHub](https://github.com/Shakarneh)
