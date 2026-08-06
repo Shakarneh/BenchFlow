@@ -48,3 +48,38 @@ with the Hungarian algorithm — not a set of CRUD forms.
 | **Pipeline state machine** | Guarded transitions from request to placement, with an append-only audit trail |
 | **Rate & margin engine** | `Decimal` money, cost vs bill, rounding that finance agrees with |
 | **Concurrency** | Two managers must not book the same person into the same week |
+
+---
+
+## The matching engine
+
+Three interchangeable strategies behind one `Matcher` interface:
+
+| Strategy | Complexity | Optimal? | Role |
+|---|---|---|---|
+| `GreedyMatcher` | O(n log n) | ❌ order-dependent | Fast baseline, kept for comparison |
+| `OptimalMatcher` | O(k<sup>n</sup>) | ✅ | Brute force — **test oracle only** |
+| `HungarianMatcher` | O(n³) | ✅ | **The default** |
+
+Measured with `python manage.py benchmark_matchers`:
+
+| requests × people | matcher | unfilled | total cost | ms |
+|---|---|---|---|---|
+| **8 × 25** | greedy | **1** | 605.00 | 0.76 |
+| | hungarian | **0** | 652.00 | 1.34 |
+| 15 × 60 | greedy | 0 | 917.00 | 3.80 |
+| | hungarian | 0 | **904.00** | 11.57 |
+| 30 × 150 | greedy | 0 | 2097.00 | 19.43 |
+| | hungarian | 0 | **2071.00** | 160.14 |
+
+**Read the 8 × 25 row.** Greedy saved 47 in cost and left a client entirely unstaffed. That is a
+locally optimal choice that is globally wrong, and it is exactly the trap the Hungarian algorithm
+avoids. When supply is loose (15 × 60, 30 × 150) both fill everything and Hungarian is *also*
+cheaper. It costs about 8× the runtime — 160 ms for 150 people, irrelevant for work a human does
+over three days.
+
+Trusting an algorithm nobody in this repo derived is its own problem, so it is verified by
+**oracle testing**: 200 random worlds where the Hungarian result must equal the brute-force
+optimum exactly, plus 300 more asserting invariants.
+
+📄 Full write-up: [`docs/matching.md`](docs/matching.md)
