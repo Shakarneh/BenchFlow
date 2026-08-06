@@ -133,3 +133,23 @@ The last row matters as much as the others: a pattern that was considered, judge
 documented as rejected.
 
 📄 Full write-up: [`docs/patterns.md`](docs/patterns.md)
+
+---
+
+## The API
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/specialists/` | Everyone in the pool, with their skills |
+| `GET` | `/api/requests/` | Every open client request |
+| `POST` | `/api/requests/<id>/propose/` | **Run the matcher** — returns proposals, rejections with reasons, and a cache flag |
+| `GET` | `/api/health/` | Liveness plus database reachability |
+| `GET` | `/api/docs/` | Interactive Swagger UI (OpenAPI 3, drf-spectacular) |
+
+Every endpoint requires authentication — `IsAuthenticated` is the **default**: deny by default,
+allow by exception. `propose/` additionally requires the *Account Managers* group; recruiters may
+look, only managers may act.
+
+`POST`, not `GET`, on `propose/`: reading is a `GET`, asking the system to *do* something is a
+`POST`. Domain rule violations return **409 Conflict**, not 500 — a refused placement is a
+disagreement about the rules, not a crash.
