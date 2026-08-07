@@ -18,6 +18,13 @@
 
 <sub>Free hosting tier — the first request takes ~50s while the instance wakes up.</sub>
 
+<br>
+
+<img src="docs/images/dashboard-result.png" alt="The matcher's answer for one client request: one specialist proposed, and every other specialist listed with the exact reason they were rejected" width="820">
+
+<sub><b>The matcher, answering.</b> One request, two seats, one person proposed — and every rejection
+explains itself: missing skill, no room in the calendar, over budget, not available yet.</sub>
+
 </div>
 
 ---
@@ -153,6 +160,26 @@ look, only managers may act.
 `POST`, not `GET`, on `propose/`: reading is a `GET`, asking the system to *do* something is a
 `POST`. Domain rule violations return **409 Conflict**, not 500 — a refused placement is a
 disagreement about the rules, not a crash.
+
+---
+
+## Screenshots
+
+**The dashboard** — one page, plain HTML and `fetch()`. No React, no npm, no build step: a
+single-page frontend does not need a toolchain, and refusing to add one kept Docker and CI
+untouched.
+
+![The benchFlow dashboard listing three open client requests with their required skills, dates and budgets](docs/images/dashboard.png)
+
+**The Django admin**, rethemed to the same design language by overriding Django's own CSS
+variables — no forked stylesheets.
+
+![The Django admin index, rethemed in warm paper and ink, listing Skills, Specialists and Requests](docs/images/admin.png)
+
+**The API documentation** at `/api/docs/`, generated from the code by drf-spectacular — so it
+cannot drift from what the API actually does.
+
+![Swagger UI showing the benchFlow API endpoints for requests, specialists and schema](docs/images/swagger.png)
 
 ---
 
