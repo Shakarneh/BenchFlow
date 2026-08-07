@@ -81,11 +81,26 @@ async function loadRequests() {
   box.innerHTML = skeleton();
 
   const res = await fetch("/api/requests/");
+
+  // Not logged in. Every endpoint requires authentication by default, so say
+  // so plainly and hand the visitor the demo account -- a public demo that
+  // shows an empty page is worse than no demo.
   if (res.status === 403) {
     box.innerHTML = `
-      <div class="card"><div class="card__head">
-        <p class="empty">The API requires a login. <a href="/admin/">Sign in</a> to continue.</p>
-      </div></div>`;
+      <article class="card">
+        <div class="card__head">
+          <div>
+            <h2 class="client">Live demo</h2>
+            <p class="empty">
+              Every endpoint here requires a login — the same rule that protects it in
+              production. Sign in as <span class="num">manager</span> ·
+              <span class="num">demo1234</span> and press <strong>Propose</strong> on any
+              request to run the matcher.
+            </p>
+          </div>
+          <a class="btn" href="/api/auth/login/?next=/">Sign in</a>
+        </div>
+      </article>`;
     return;
   }
 
