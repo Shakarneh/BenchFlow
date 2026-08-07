@@ -152,6 +152,12 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
 }
 
+# Where Django sends people after login and logout. The default is
+# /accounts/profile/, a URL this project has never had -- so signing in landed
+# on a 404. The dashboard is the only page a visitor wants.
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     # WhiteNoise serves static files (the admin's CSS) straight from the app.
