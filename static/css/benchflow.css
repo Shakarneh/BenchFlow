@@ -314,6 +314,17 @@ h2 { font-size: 1.3rem; }
               box-shadow 0.18s var(--ease), opacity 0.18s var(--ease);
 }
 
+/* The same button as a link: <a> is inline and carries the link colour, so
+   both have to be put back. */
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  color: var(--paper);
+  text-decoration: none;
+}
+
+a.btn:hover { color: var(--paper); }
+
 .btn:hover:not(:disabled) {
   background: #2c2822;
   transform: translateY(-1px);
