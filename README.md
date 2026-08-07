@@ -316,6 +316,6 @@ promise.
 
 ---
 
-**Author:** Mohammed M.Y. Shakarneh ·
+**Author:** Mohammed Shakarneh ·
 [Portfolio](https://mohammedshakarneh.com) ·
 [GitHub](https://github.com/Shakarneh)
