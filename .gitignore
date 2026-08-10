@@ -38,7 +38,10 @@ htmlcov/
 Thumbs.db
 desktop.ini
 
-# ─── NOT ignored, on purpose ──────────────────────────────────────────
-# CLAUDE.md and WORKFLOW.md are documentation, not secrets.
-# They are the source of truth and MUST be committed — a fresh session
-# reads them to know where we stopped.
+# ─── Private planning notes — local only ──────────────────────────────
+# These are personal working documents: the learning plan, the progress
+# log, goals and self-assessment. They are not project documentation and
+# they do not belong in a public repository.
+# The public docs are README.md and docs/.
+CLAUDE.md
+WORKFLOW.md

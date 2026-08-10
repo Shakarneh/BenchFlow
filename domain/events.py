@@ -6,7 +6,7 @@ pipeline should not know about any of them.
 
 So instead of calling those things, it ANNOUNCES what happened. Whoever
 cares subscribes. Adding a fifth reaction later touches no existing code --
-that is the Open/Closed principle from Phase 2, at the system level.
+that is the Open/Closed principle, at the system level.
 """
 
 from dataclasses import dataclass
@@ -32,7 +32,7 @@ class RequestStateChanged(DomainEvent):
 
 @dataclass(frozen=True)
 class SourcingStarted(DomainEvent):
-    """The SLA clock starts here. Expert Choice promises three days from now."""
+    """The SLA clock starts here -- three days to place, from this moment."""
 
     client_name: str
 
@@ -47,7 +47,7 @@ class EventBus:
     """Announces events to whoever subscribed to that kind of event.
 
     Deliberately tiny. A real system would put a message broker behind this
-    interface -- Phase 13 does exactly that with Celery and Redis -- but the
+    interface -- the Celery tasks do exactly that with Redis -- but the
     domain never needs to know.
     """
 
