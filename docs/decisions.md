@@ -20,9 +20,9 @@ Details: [matching.md](matching.md).
 
 **Decision.** `import-linter` runs with three contracts: business code (`domain/`)
 may import only the standard library; use cases (`application/`) may not touch
-Django; arrows always point inward. From Phase 18 this runs on every push.
+Django; arrows always point inward. It runs on every push.
 
-**Why.** The rule existed since day 0, but only as text in CLAUDE.md. We broke it on
+**Why.** The rule existed from day one, but only as prose in the documentation. We broke it on
 purpose (`from django.db import models` inside `domain/skill.py`) and watched the
 build fail with the exact file and line. A rule a computer checks cannot quietly rot.
 

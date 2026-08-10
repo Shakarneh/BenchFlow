@@ -31,8 +31,8 @@ or the business rules become untestable without a database.
 `RequestRepository`, `SkillGraphRepository`). `infrastructure/` provides Django
 *adapters*. `specialist_to_domain()` is the border where everything Django-shaped stops.
 
-**What it bought.** `GreedyMatcher`, written in Phase 1 with no database in existence,
-ran against real PostgreSQL rows in Phase 4 without a single change. The full test
+**What it bought.** `GreedyMatcher`, written before any database existed, later
+ran against real PostgreSQL rows without a single change. The full test
 suite runs in under a second because it never touches a database.
 
 ---
@@ -73,7 +73,7 @@ records.
 **What it bought.** Illegal transitions raise instead of corrupting state. Business
 rules live in data, not in branching code — *"an active engagement cannot be cancelled"*
 is expressed purely as an absence from the table. And `time_to_fill()` measures
-Sourcing → Placed, which is Expert Choice's advertised three-day promise.
+Sourcing → Placed, which is the three-day placement promise these companies advertise.
 
 ---
 
@@ -87,7 +87,7 @@ know about any of them.
 care about. Events are frozen dataclasses named in the past tense — they are facts.
 
 **What it bought.** Adding a fourth reaction touches no existing code — the Open/Closed
-principle at system level. And it draws the seam that Phase 13 needs: `EventBus` is
+principle at system level. And it draws the seam the background worker needs: `EventBus` is
 the interface a real message broker (Celery + Redis) slots behind, without the domain
 learning that queues exist.
 
@@ -114,8 +114,8 @@ constructor which needs no wrapping. More indirection, no problem solved.
 
 **The general rule.** A pattern earns its place by removing a pain that exists. Applying
 one because it appears on a list is how codebases acquire layers nobody can justify.
-`CLAUDE.md` §6 lists *"and when patterns are overkill"* as a Phase 8 concept — this is
-that entry, and it is written down rather than demonstrated by making the mistake.
+*"When a pattern is overkill"* is as much a part of knowing patterns as applying them —
+so it is written down here, rather than demonstrated by making the mistake.
 
 If a future requirement makes construction genuinely complex — say, building a
 `Specialist` differently per client contract type — Factory becomes the right answer
