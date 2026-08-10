@@ -1,4 +1,4 @@
-"""The case that justifies the whole of Phase 7.
+"""The case that justifies the whole matching engine.
 
 Greedy fills each request with the cheapest qualified person available at
 that moment. Every individual decision is sensible. The overall result is

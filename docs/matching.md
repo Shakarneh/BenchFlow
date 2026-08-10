@@ -140,7 +140,7 @@ failing, not a saving.
 both fill everything, and Hungarian is cheaper by 13 and 26 respectively.
 
 **Hungarian costs about 8× the runtime.** 160ms at 30×150 — irrelevant for work that
-runs as a background job, which is what Phase 13 makes it.
+runs as a background job, which is what the Celery task makes it.
 
 ## Decision
 

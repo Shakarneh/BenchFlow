@@ -73,7 +73,7 @@ are reproducible and an upgrade is a deliberate, reviewable change. Django 5.2 i
 release, chosen specifically because it receives security patches for years.
 
 **Not done.** Automated vulnerability scanning (`pip-audit`, Dependabot). This belongs in
-Phase 18's CI pipeline.
+the CI pipeline.
 
 ## A07 — Identification and Authentication Failures
 
@@ -112,8 +112,8 @@ them somewhere queryable.
 
 ## Personal data — ФЗ-152 considerations
 
-Expert Choice operates under Russian personal-data law (ФЗ-152) and ГОСТ 57580.1 for banking
-clients, so this deserves explicit thought rather than silence.
+IT service companies in Russia operate under personal-data law (ФЗ-152), and ГОСТ 57580.1 applies
+when their clients are banks, so this deserves explicit thought rather than silence.
 
 **What benchFlow stores about a person:** full name, hourly cost rate, availability dates,
 skills and levels. This is employment data, not sensitive personal data — no passport
@@ -140,7 +140,7 @@ rather than deletion.
 | | |
 |---|---|
 | Handled in code | access control · secrets in env · ORM-only queries · DB-level invariants · row locking · atomic transactions · audit trail · production hardening |
-| Deferred deliberately | object-level permissions · JWT · dependency scanning (Phase 18) · log aggregation |
+| Deferred deliberately | object-level permissions · JWT · dependency scanning · log aggregation |
 | Known gap | right to erasure vs. preserved history |
 
 The point of this document is not to claim benchFlow is secure. It is to show that the

@@ -73,7 +73,7 @@ def test_health_check_is_open_and_reports_the_database():
 
 @pytest.mark.django_db
 def test_anonymous_visitors_are_locked_out():
-    """No login -> 403. This is the whole point of Phase 11."""
+    """No login -> 403. Deny by default is the whole point."""
     make_world()
     response = APIClient().get("/api/specialists/")
     assert response.status_code == 403

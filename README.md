@@ -271,25 +271,6 @@ variable fails safe rather than leaking tracebacks.
 
 ---
 
-## How this was built
-
-benchFlow was written with AI assistance, deliberately and with a method — not by prompting until
-something ran.
-
-[`CLAUDE.md`](CLAUDE.md) is a **specification the AI is bound to**: the domain, the architecture,
-the 21-phase plan, the conventions, and the working rules — including *"never write code before
-explaining it"* and *"the human runs every Git command."* [`WORKFLOW.md`](WORKFLOW.md) holds the
-same thing as diagrams.
-
-The rule that keeps it honest: **before any commit, I explain the code back in my own words.** If I
-can't, it isn't committed and we go again. The AI wrote most of the code; I typed the business
-rules and the algorithm cores — the objective function, the sweep-line, the row lock, the BFS
-loop. Every phase, every decision and every mistake is logged in `CLAUDE.md` §9.
-
-That file is why this repository can be defended line by line rather than merely shown.
-
----
-
 ## Documentation
 
 | Document | What's in it |
@@ -298,8 +279,6 @@ That file is why this repository can be defended line by line rather than merely
 | [`docs/patterns.md`](docs/patterns.md) | Five design patterns, before and after, plus one rejected |
 | [`docs/decisions.md`](docs/decisions.md) | Architecture decision records |
 | [`docs/security.md`](docs/security.md) | OWASP Top 10 review and personal-data handling |
-| [`CLAUDE.md`](CLAUDE.md) | The project bible: plan, conventions, full progress log |
-| [`WORKFLOW.md`](WORKFLOW.md) | The same, as diagrams |
 
 ---
 
@@ -310,9 +289,9 @@ Two reasons, both deliberate.
 To learn backend engineering properly — architecture, algorithms, testing and operations, rather
 than framework tutorials.
 
-And because it models the actual business of **Expert Choice CIS**, an IT outstaffing company whose
-homepage promises a three-day average time to place a specialist. This is the system behind that
-promise.
+And because it models a real business rather than an imaginary one. IT outsourcing companies
+routinely advertise a three-day average time to place a specialist with a client. This is the
+system behind that kind of promise.
 
 ---
 
