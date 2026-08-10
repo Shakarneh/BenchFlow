@@ -19,7 +19,7 @@ class Request:
     """An open demand from a client.
 
     An entity: it has a life cycle (draft, open, sourcing, placed...) that
-    Phase 8 will model as a state machine. Hence NOT frozen.
+    `domain/pipeline.py` models as a state machine. Hence NOT frozen.
     """
 
     client_name: str

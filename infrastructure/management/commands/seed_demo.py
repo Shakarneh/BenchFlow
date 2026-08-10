@@ -1,8 +1,8 @@
 """Rebuild the demo dataset from scratch: python manage.py seed_demo
 
 Seed data is not decoration -- every benchmark, screenshot and demo depends
-on realistic rows existing. Keeping it as code means anyone (an interviewer,
-CI, future you) reproduces the exact same database in one command.
+on realistic rows existing. Keeping it as code means anyone (a reviewer, CI,
+future you) reproduces the exact same database in one command.
 """
 
 from datetime import date

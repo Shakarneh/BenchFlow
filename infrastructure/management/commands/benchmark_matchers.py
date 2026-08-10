@@ -1,6 +1,6 @@
 """Measure the three matchers against each other: python manage.py benchmark_matchers
 
-Phase 7 of CLAUDE.md asks for the trade-off to be MEASURED, not asserted.
+The trade-off between the matchers is MEASURED here, not asserted.
 Two things get compared: how good the answer is (slots filled, total cost)
 and how long it takes to produce.
 """
